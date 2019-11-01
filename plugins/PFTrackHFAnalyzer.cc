@@ -217,6 +217,10 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 21 , -0.5 , 20.5 );
   hname = "pftrackHF_n_range";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 300 , 0. , 3000. );
+  hname = "pfcandCH1ele_pftrackHF_n";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 21 , -0.5 , 20.5 );
+
+
   hname = "pftrack_pt";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 250 , 0. , 250. );
   hname = "pftrack_eta";
@@ -248,6 +252,11 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 1. );
   hname = "pfrechitHFHAD_occupancy";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 1. );
+  hname = "pfrechitHFEM_occupancy_vs_absieta";
+  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 21, 24.5, 45.5, 100 , 0. , 1. );
+  hname = "pfrechitHFHAD_occupancy_vs_absieta";
+  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 21, 24.5, 45.5, 100 , 0. , 1. );
+
 
   hname = "pfrechitHFEM_E";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 200. );
@@ -489,12 +498,19 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "EovPPU_nobrem";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 5. );
 
+  hname = "HFCH_DR_track_HFclusters" ;
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 4. );
+
+  hname = "pfcandCH1ele_drmin" ;
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 4. );
+
+  TFileDirectory subDir_offset = fs->mkdir( "OffsetPlots" );
   for (int i_id=0; i_id<numFlavors; i_id++){
     for (int i_nPU=0; i_nPU<25; i_nPU++){
       hname = Form("edensity_eta_nPU%i_",i_nPU) + ids[i_id];
-      m_Profiles[hname] = fs->make<TProfile>(hname, hname, ETA_BINS, etabins);
+      m_Profiles[hname] = subDir_offset.make<TProfile>(hname, hname, ETA_BINS, etabins);
       hname = Form("ptdensity_eta_nPU%i_",i_nPU) + ids[i_id];
-      m_Profiles[hname] = fs->make<TProfile>(hname, hname, ETA_BINS, etabins);
+      m_Profiles[hname] = subDir_offset.make<TProfile>(hname, hname, ETA_BINS, etabins);
     }
   }
 }
@@ -600,7 +616,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pftracks: =========== "     << pftracks->size();
-  int pftrack_n = 0,  pftrackHF_n = 0;
+  int pftrack_n = 0,  pftrack_npos = 0, pftrack_nneg = 0, pftrackHF_n = 0;
   double trkP_P = -1., trkP_pt  = -1., trkP_pterror = -1., trkP_eta = 0., trkP_phi = 0., trkP_etaHF = 0., trkP_phiHF = 0.,
          trkN_P = -1., trkN_pt  = -1., trkN_pterror = -1., trkN_eta = 0., trkN_phi = 0., trkN_etaHF = 0., trkN_phiHF = 0.;
   int    trkP_ieta1 = -1, trkP_ieta2 = -1, trkP_iphi1 = -1, trkP_iphi2 = -1,
@@ -646,8 +662,10 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   FillHist1D("pftrack_pull",  ((trkN_pt-genN_pt)/trkN_pterror),  1. );
 
   for(const auto& pftrack : *(pftracks.product()) ){
-    pftrack_n++;
+    pftrack_n++; 
     const reco::TrackRef trackref = pftrack.trackRef();
+    if(trackref->eta() > 0.)   pftrack_npos++ ;
+    if(trackref->eta() < 0.)   pftrack_nneg++ ;
     if(fabs(trackref->eta()) > 3.)   pftrackHF_n++ ;
     if(trackref != trackrefP && trackref != trackrefN){
       FillHist1D("pfPUtrack_pt",  trackref->pt(),  1. );
@@ -770,7 +788,12 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pfrechitsHF: =========== "  << pfrechitsHF->size();
-  int pfrechitHFEM_n = 0, pfrechitHFHAD_n = 0 ;
+  unsigned pfrechitHFEM_n = 0, pfrechitHFHAD_n = 0 ;
+  map<unsigned, unsigned> pfrechitHFEM_n_ieta, pfrechitHFHAD_n_ieta ;
+  for (unsigned i=28; i<=41 ; ++i){
+    pfrechitHFEM_n_ieta.insert(make_pair(i,0));
+    pfrechitHFHAD_n_ieta.insert(make_pair(i,0));
+  }
   double pfrechitHFEMP_Emax = -1.,  pfrechitHFHADP_Emax = -1.,
          pfrechitHFEMN_Emax = -1.,  pfrechitHFHADN_Emax = -1. ;
 
@@ -784,6 +807,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     if(idep == 1) { // HFEM
       pfrechitHFEM_n++ ;
+      pfrechitHFEM_n_ieta[abs(ieta)]++;
       FillHist1D("pfrechitHFEM_E", E, 1. );
       if(ieta > 0){
         if(E > pfrechitHFEMP_Emax ) pfrechitHFEMP_Emax = E ; 
@@ -796,6 +820,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       }
     } else { // HFHAD
       pfrechitHFHAD_n++ ;
+      pfrechitHFHAD_n_ieta[abs(ieta)]++;
       FillHist1D("pfrechitHFHAD_E", E, 1. );
       if(ieta > 0){
         if(E > pfrechitHFHADP_Emax ) pfrechitHFHADP_Emax = E ;
@@ -814,8 +839,14 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   }
   FillHist1D("pfrechitHFEM_n",  pfrechitHFEM_n,  1. );
   FillHist1D("pfrechitHFHAD_n", pfrechitHFHAD_n, 1. );
-  FillHist1D("pfrechitHFEM_occupancy",  double(pfrechitHFEM_n)/1728.,  1. );
-  FillHist1D("pfrechitHFHAD_occupancy", double(pfrechitHFHAD_n)/1728., 1. );
+  FillHist1D("pfrechitHFEM_occupancy",  double(pfrechitHFEM_n)/864.,  1. );
+  FillHist1D("pfrechitHFHAD_occupancy", double(pfrechitHFHAD_n)/864., 1. );
+  for (unsigned i=28; i<=41 ; ++i){
+    double n = i < 40 ? 2*36 : 2*18 ; 
+    FillHist2D("pfrechitHFEM_occupancy_vs_absieta",   i, double(pfrechitHFEM_n_ieta[i])/n,  1. );
+    FillHist2D("pfrechitHFHAD_occupancy_vs_absieta",  i, double(pfrechitHFHAD_n_ieta[i])/n,  1. );
+  }
+
   FillHist1D("pfrechitHFEM_Emax",  pfrechitHFEMP_Emax,  1. );
   FillHist1D("pfrechitHFEM_Emax",  pfrechitHFEMN_Emax,  1. );
   FillHist1D("pfrechitHFHAD_Emax", pfrechitHFHADP_Emax,  1. );
@@ -1097,16 +1128,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         }
       }
       if(type == reco::PFBlockElement::BREM) hasBREM = true ;
-//      if(type == reco::PFBlockElement::TRACK){ 
-//        if(elements[el].trackRef() == trackrefP){ 
-//          track_poseta = true ; track_poseta_n++ ;
-//ctmp          if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_poseta " , );
-//        }
-//        if(elements[el].trackRef() == trackrefN){ 
-//          track_negeta = true ; track_negeta_n++ ;
-//ctmp          if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_negeta ");
-//        }
-//      }
     }  // end of loop over elements
 
     if (id == reco::PFCandidate::h ){
@@ -1122,6 +1143,21 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         FillHist1D("pfcandCH_nhits", PFrechitsHF.size(), 1. );
         if(hasBREM) FillHist1D("pfcandCH_brem_nelements",   nele, 1. );
         else        FillHist1D("pfcandCH_nobrem_nelements", nele, 1. );
+
+        if(nele == 1){ // study why nele = 1 for "our" track
+          if(track_poseta) FillHist1D("pfcandCH1ele_pftrackHF_n", pftrack_npos, 1. );
+          if(track_negeta) FillHist1D("pfcandCH1ele_pftrackHF_n", pftrack_nneg, 1. );
+          double drmin = 3.5 ;
+          for(const auto& pfclus : *(pfclustersHF.product()) ){ // find closest cluster
+            double cluseta = pfclus.eta() ;
+            double clusphi = pfclus.phi() ;
+            double trk_etaHF = track_poseta ? trkP_etaHF : trkN_etaHF ;
+            double trk_phiHF = track_poseta ? trkP_phiHF : trkN_phiHF ;
+            double dr = deltaR(trk_etaHF, trk_phiHF,  cluseta,  clusphi);
+            if(dr < drmin) drmin = dr ;
+          }
+          FillHist1D("pfcandCH1ele_drmin", drmin, 1);
+        }
       } else {
         FillHist1D("pfcandCHPU_nelements", nele, 1. );
         FillHist1D("pfcandCHPU_nelementsHF", neleHFEM+neleHFHAD, 1. );
@@ -1167,14 +1203,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         LogPrint("PFTrackHFAnalyzer") << boost::format("   track in the block (pt, p, eta, phi, type): (%6.2f, %6.2f, %6.2f, %6.2f, %i)") %
         elements[el].trackRef()->pt() % elements[el].trackRef()->p() % elements[el].trackRef()->eta() % elements[el].trackRef()->phi() % type ;
         tp = elements[el].trackRef()->p() ;
-/*        if(elements[el].trackRef() == trackrefP){ 
-          track_poseta = true ; track_poseta_n++ ; 
-          if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_poseta "); 
-        }
-        if(elements[el].trackRef() == trackrefN){ 
-          track_negeta = true ; track_negeta_n++ ;
-          if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_negeta ");  
-        }*/
       } else if(type == reco::PFBlockElement::HFEM || type == reco::PFBlockElement::HFHAD){
         if (debug_ && scan)
         LogPrint("PFTrackHFAnalyzer") << boost::format("   cluster in the block (pt, e, eta, phi, type): (%6.2f, %6.2f, %6.2f, %6.2f, %i)") %
@@ -1183,6 +1211,14 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         const std::vector<std::pair<DetId, float>> &hfracs = elements[el].clusterRef()->hitsAndFractions();
         ehf += elements[el].clusterRef()->energy() ;
         unsigned nhits = fracs.size();
+
+        if(track_poseta || track_negeta){
+          double trk_etaHF = track_poseta ? trkP_etaHF : trkN_etaHF ;
+          double trk_phiHF = track_poseta ? trkP_phiHF : trkN_phiHF ;
+          double dr = deltaR(trk_etaHF, trk_phiHF,  elements[el].clusterRef()->eta(),  elements[el].clusterRef()->phi());
+          FillHist1D("HFCH_DR_track_HFclusters", dr, 1);
+        }
+
         for(unsigned i=0; i<nhits; i++) {
           const reco::PFRecHitRef& pfRecHits = fracs[i].recHitRef();
 

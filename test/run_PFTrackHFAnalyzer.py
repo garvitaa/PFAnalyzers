@@ -21,7 +21,7 @@ options.register ('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton,
 ##
 ## Default
 ##
-options.maxEvents = -1 # means all events
+options.maxEvents = -1 #-1 # means all events
 options.skipEvents = 0 # default is 0.
 
 ##
@@ -37,113 +37,100 @@ options.parseArguments()
 # TTbar sample
 #
 # RECO
+
 options.inputFiles = [
-     'file:/store/relval/CMSSW_11_0_0_pre7/RelValSinglePiFlatPt0p7To10/MINIAODSIM/110X_mcRun4_realistic_v1_2026D41noPU-v1/10000/9D938200-8C7C-6940-862D-067B7DCB4980.root'
-#    'file:/eos/uscms/store/user/lpcjme/PFForwardTrack/SinglePiPt50_3p45_3p54_n1000/SinglePiPt50_3p45_3p54_n1000_step3.root',
-#
-# noTrackLink samples 
-#
-#    'file:/afs/cern.ch/work/g/gagarwal/public/SinglePiPt10Eta3p45_3p54_n1000_noTrackLink_step3.root',
-#    'file:/afs/cern.ch/work/g/gagarwal/public/SinglePiMinusPt10Eta3p45_3p54_n1000_noTrackLink_step3.root',     
-#    'file:/afs/cern.ch/work/g/gagarwal/public/SinglePiPt50Eta2p8_4p2_n500_noTrackLink_step3.root',
-#    'file:/afs/cern.ch/work/g/gagarwal/public/SinglePiPt50Eta3p45_3p54_n1000_noTrackLink_step3.root',
-#
-# TrackLink samples 
-#
-#    'file:/afs/cern.ch/work/g/gagarwal/public/SinglePiPt50Eta3p45_3p54_n800_step3.root',
-#
-#    'file:/eos/uscms/store/user/lpcjme/PFForwardTrack/SinglePiPt5_3p45_3p54_n1000/SinglePiPt5_3p45_3p54_n1000_step3.root',
-#
-#
-#
-#   
-######    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_1.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_2.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_3.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_4.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_5.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_6.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_7.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_8.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_9.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_10.root',
-######    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_11.root',
-######    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_12.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_13.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_14.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_15.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_16.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_17.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_18.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_19.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_20.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_21.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt5Eta3p45_3p54/SinglePiPt5Eta3p45_3p54_step3_22.root',
-#
-#
-#
-####    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_1.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_2.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_3.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_4.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_5.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_6.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_7.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_8.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_9.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_10.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_11.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_12.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_13.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_14.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_15.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_16.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_17.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_18.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_19.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_20.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_21.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_22.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_23.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_24.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_25.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_26.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_27.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_28.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_29.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_30.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiMinusPt5Eta3p45_3p54/SinglePiMinusPt5Eta3p45_3p54_step3_31.root',
-#  FakeTracks
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt10Eta3p45_3p54_n1000_FakeTracks.root',
-#
-#   PU sample
-#    'file:/afs/cern.ch/work/g/gagarwal/public/step3_SinglePiPt50Eta3p45_3p54_n10_PU10.root'
-#
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_1.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_2.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_3.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_4.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_5.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_6.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_7.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_8.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_9.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_10.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_11.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_12.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_13.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_14.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_15.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_16.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_17.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_18.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_19.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_20.root',
-#    'file:/afs/cern.ch/user/i/iashvili/public/PFLOW/SinglePiPt50Eta3p45_3p54_PU10/SinglePiPt50Eta3p45_3p54_PU10_21.root',
-#
+
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_99.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_98.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_97.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_96.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_95.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_94.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_93.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_92.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_91.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_9.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_88.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_87.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_86.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_85.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_84.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_82.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_81.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_80.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_8.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_77.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_76.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_75.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_74.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_73.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_71.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_70.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_7.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_69.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_68.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_67.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_65.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_64.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_63.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_60.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_6.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_59.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_58.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_56.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_55.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_54.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_53.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_52.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_51.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_5.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_49.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_48.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_47.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_46.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_45.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_44.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_43.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_42.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_41.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_40.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_4.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_39.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_38.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_37.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_36.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_35.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_34.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_33.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_32.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_31.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_30.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_3.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_29.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_28.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_27.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_25.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_24.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_23.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_22.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_21.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_20.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_2.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_19.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_18.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_17.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_16.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_15.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_14.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_13.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_12.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_11.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_100.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_10.root',
+      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_1.root'
 ]
 
-options.outputFile = 'hist_PFTrackHFAnalyzer.root'
+options.outputFile = 'hist_PFTrackHFAnalyzer_SinglePiPt5Eta3p45_3p54.root'
 #
 #
 #
