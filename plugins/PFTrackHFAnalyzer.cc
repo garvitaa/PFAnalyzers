@@ -678,7 +678,8 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       // looping over all points on the trajectory
       std::vector<reco::PFTrajectoryPoint> trajectoryPoints = pftrack.trajectoryPoints();
       for (unsigned ip = 0; ip<trajectoryPoints.size(); ++ip){
-        if (trajectoryPoints[ip].isValid()) cout << trajectoryPoints[ip] <<endl;
+      //ctmp  if (trajectoryPoints[ip].isValid()) cout << trajectoryPoints[ip] <<endl;
+        if (fabs(trackref->eta()) < 1.0 && trackref->pt() < 3.0 ) cout << trajectoryPoints[ip] <<endl;
       }
     }
 
