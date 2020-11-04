@@ -5,13 +5,19 @@ import FWCore.ParameterSet.Config as cms
 from Configuration.StandardSequences.Eras import eras
 import FWCore.ParameterSet.VarParsing as VarParsing
 
+isRun3 = True
+
 #------------------------------------------------------------------------------------
 # Declare the process and input variables
 #------------------------------------------------------------------------------------
 #process = cms.Process('NOISE',eras.Run2_50ns)#for 50ns 13 TeV data
 #process = cms.Process('NOISE',eras.Run2_25ns)#for 25ns 13 TeV data
 options = VarParsing.VarParsing ('analysis')
-process = cms.Process("Trees",eras.Phase2) 
+if(isRun3):
+  process = cms.Process("Trees",eras.Run3)
+else:
+  process = cms.Process("Trees",eras.Phase2)
+
 
 ##
 ## Setup command line options
@@ -21,13 +27,14 @@ options.register ('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton,
 ##
 ## Default
 ##
-options.maxEvents = -1 #-1 # means all events
+options.maxEvents = -1 # means all events
 options.skipEvents = 0 # default is 0.
 
 ##
 ## get and parse the command line arguments
 ##
 options.parseArguments()
+
 
 #
 # Dataset e.g.
@@ -37,100 +44,17 @@ options.parseArguments()
 # TTbar sample
 #
 # RECO
-
 options.inputFiles = [
-
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_99.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_98.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_97.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_96.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_95.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_94.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_93.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_92.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_91.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_9.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_88.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_87.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_86.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_85.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_84.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_82.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_81.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_80.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_8.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_77.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_76.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_75.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_74.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_73.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_71.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_70.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_7.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_69.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_68.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_67.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_65.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_64.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_63.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_60.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_6.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_59.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_58.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_56.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_55.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_54.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_53.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_52.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_51.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_5.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_49.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_48.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_47.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_46.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_45.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_44.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_43.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_42.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_41.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_40.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_4.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_39.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_38.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_37.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_36.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_35.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_34.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_33.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_32.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_31.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_30.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_3.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_29.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_28.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_27.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_25.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_24.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_23.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_22.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_21.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_20.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_2.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_19.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_18.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_17.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_16.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_15.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_14.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_13.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_12.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_11.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_100.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_10.root',
-      'root://cmseos.fnal.gov//store/group/lpcjme/PFForwardTrack/SinglePiPt5Eta3p45_3p54_2026D41/step3/191018_160332/0000/SinglePiPt5Eta3p45_3p54_step3_1.root'
+#    'file:/eos/uscms/store/group/hcal_upgrade/HFupgrade/garvitaa_MCfiles/Phase2/SinglePiPt10Eta2p8_5p2_step3_10kevents.root',
+    'file:/eos/uscms/store/group/hcal_upgrade/HFupgrade/garvitaa_MCfiles/Run3/SingleElectronPt10Eta2p8_5p2_step3_10kevents.root',
 ]
 
-options.outputFile = 'hist_PFTrackHFAnalyzer_SinglePiPt5Eta3p45_3p54.root'
+if (isRun3):
+  outName = 'Run3'
+else:
+  outName = 'Phase2'
+options.outputFile = 'hist_SingleElectron_PFTrackHFAnalyzer_'+outName+'_newThresholds.root'
+
 #
 #
 #
@@ -161,20 +85,36 @@ process.options = cms.untracked.PSet(
 )
 
 #------------------------------------------------------------------------------------
-# import of standard configurations
+# Import Standard Config
 #------------------------------------------------------------------------------------
-# import of standard configurations
-process.load('FWCore.MessageService.MessageLogger_cfi')
-process.load('Configuration.EventContent.EventContent_cff')
-process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
-process.load('Configuration.StandardSequences.MagneticField_cff')
-process.load('Configuration.StandardSequences.RawToDigi_cff')
-process.load('Configuration.StandardSequences.L1Reco_cff')
-process.load('Configuration.StandardSequences.Reconstruction_cff')
-process.load('Configuration.StandardSequences.Validation_cff')
-process.load('DQMOffline.Configuration.DQMOfflineMC_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+if(isRun3): # import of standard configurations for Run 3
+  process.load('Configuration.StandardSequences.Services_cff')
+  process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+  process.load('FWCore.MessageService.MessageLogger_cfi')
+  process.load('Configuration.EventContent.EventContent_cff')
+  process.load('SimGeneral.MixingModule.mixNoPU_cfi')
+  process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+  process.load('Configuration.StandardSequences.MagneticField_cff')
+  process.load('Configuration.StandardSequences.RawToDigi_cff')
+  process.load('Configuration.StandardSequences.L1Reco_cff')
+  process.load('Configuration.StandardSequences.Reconstruction_cff')
+  process.load('Configuration.StandardSequences.Validation_cff')
+  process.load('Configuration.StandardSequences.EndOfProcess_cff')
+  process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+else: # import of standard configurations for Phase 2
+  process.load('FWCore.MessageService.MessageLogger_cfi')
+  process.load('Configuration.EventContent.EventContent_cff')
+  process.load('SimGeneral.MixingModule.mixNoPU_cfi')
+  #old process.load('Configuration.Geometry.GeometryExtended2023D41Reco_cff')
+  process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
+  process.load('Configuration.StandardSequences.MagneticField_cff')
+  process.load('Configuration.StandardSequences.RawToDigi_cff')
+  process.load('Configuration.StandardSequences.L1Reco_cff')
+  process.load('Configuration.StandardSequences.Reconstruction_cff')
+  process.load('Configuration.StandardSequences.Validation_cff')
+  process.load('DQMOffline.Configuration.DQMOfflineMC_cff')
+  process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
@@ -183,7 +123,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #------------------------------------------------------------------------------------
 
 #process.load("PFAnalysis.PFAnalyzers.PFTrackHFAnalyzer_cfi")
-eventN = [1,2,3,4,5,6,7,8,9,10]
+eventN = [1,2,3,4,5,12, 479, 586, 735, 949, 987]
 process.pfTrackHFAnalyzer = cms.EDAnalyzer("PFTrackHFAnalyzer",
                                            source_genpars = cms.untracked.InputTag('genParticles', ''),
                                            source_calopars = cms.untracked.InputTag('mix', 'MergedCaloTruth'),
@@ -196,7 +136,7 @@ process.pfTrackHFAnalyzer = cms.EDAnalyzer("PFTrackHFAnalyzer",
                                            source_hfrechits = cms.untracked.InputTag('hfreco', ''),
                                            source_pileup = cms.untracked.InputTag('addPileupInfo', ''),
                                            debug = cms.untracked.bool(True),
-                                           debugRecHit = cms.untracked.bool(False),
+                                           debugRecHit = cms.untracked.bool(True),
                                            EventsToScan = cms.vint32(eventN),
                                            ptlow  = cms.double(0.),
                                            pthigh = cms.double(1000.),    
@@ -209,8 +149,12 @@ process.pfTrackHFAnalyzer = cms.EDAnalyzer("PFTrackHFAnalyzer",
 # Specify Global Tag
 #------------------------------------------------------------------------------------
 from Configuration.AlCa.GlobalTag import GlobalTag
+if(isRun3):
+  process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+else:
+  process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
+
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 #------------------------------------------------------------------------------------
 # Sequence definition
