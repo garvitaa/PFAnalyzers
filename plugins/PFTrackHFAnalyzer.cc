@@ -79,6 +79,7 @@ using namespace std;
 #include "TH2.h"
 #include "TH1.h"
 #include "TProfile2D.h"
+#include "TMath.h"
 //
 // class declaration
 //
@@ -140,6 +141,15 @@ class PFTrackHFAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
     double pthigh_;
     double etalow_;
     double etahigh_;
+
+
+    double pfrechitHFEM_Emin = 1000. ;
+    double pfrechitHFHAD_Emin = 1000. ;
+    double pfclusHFEM_Emin = 1000. ;
+    double pfclusHFHAD_Emin = 1000. ;
+
+
+//    const std::vector<double> eventsToScan;
   
     TH1I * histo;
     map<TString, TH1*> m_Histos1D;
@@ -153,6 +163,9 @@ class PFTrackHFAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
     void FillProfile2D(const TString& histName, const Double_t& value1, const Double_t& value2, const Double_t& value3, const double& weight);
     bool IsInCell(double eta, double phi, const CaloCellGeometry::CornersVec& CV);  
     int idphi(int iphiA, int iphiB);        
+    bool IsIn4(int ietaA, int ietaB, int iphiA, int iphiB);
+    bool IsInX(int ietaA, int ietaB, int iphiA, int iphiB);
+
     int getEtaIndex(float eta);   
     enum Flavor{chm = 0, chu, nh, ne, hfh, hfe, lep, untrk, numFlavors, X };
     TString ids[8] = {"chm", "chu", "nh", "ne", "hfh", "hfe", "lep", "untrk"};
@@ -173,7 +186,7 @@ class PFTrackHFAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
 PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   :
   genparToken_(consumes<reco::GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("source_genpars"))),
-  caloparToken_(consumes<CaloParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("source_calopars"))),
+  // caloparToken_(consumes<CaloParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("source_calopars"))),
   vertexToken_(consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("source_vertices"))),
   pfcandToken_(consumes<std::vector<reco::PFCandidate>>(iConfig.getUntrackedParameter<edm::InputTag>("source_pfcands"))),
   pfclusterHFToken_(consumes<std::vector<reco::PFCluster>>(iConfig.getUntrackedParameter<edm::InputTag>("source_pfclustersHF"))),
@@ -201,7 +214,7 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "gen_pt";   
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 250 , 0. , 250. );
   hname = "gen_eta";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 120 , 0. , 6. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 120 , -6. , 6. );
 
   hname = "mu";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , -0.5 , 199.5 );
@@ -216,11 +229,7 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "pftrackHF_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 21 , -0.5 , 20.5 );
   hname = "pftrackHF_n_range";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 300 , 0. , 3000. );
-  hname = "pfcandCH1ele_pftrackHF_n";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 21 , -0.5 , 20.5 );
-
-
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 1000. );
   hname = "pftrack_pt";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 250 , 0. , 250. );
   hname = "pftrack_eta";
@@ -248,15 +257,15 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 999.5 );
   hname = "pfrechitHFHAD_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 999.5 );
-  hname = "pfrechitHFEM_occupancy";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 1. );
-  hname = "pfrechitHFHAD_occupancy";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 1. );
-  hname = "pfrechitHFEM_occupancy_vs_absieta";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 21, 24.5, 45.5, 100 , 0. , 1. );
-  hname = "pfrechitHFHAD_occupancy_vs_absieta";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 21, 24.5, 45.5, 100 , 0. , 1. );
 
+  hname = "pfrechitHFEMP_n";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 999.5 );
+  hname = "pfrechitHFHADP_n";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 999.5 );
+  hname = "pfrechitHFEMN_n";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 999.5 );
+  hname = "pfrechitHFHADN_n";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 999.5 );
 
   hname = "pfrechitHFEM_E";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 200. );
@@ -270,23 +279,20 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "pfrechitHF_Emax";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 205 , -5. , 200. );
 
-  hname = "GProfileHFEMP_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
-  hname = "GProfileHFHADP_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
-  hname = "GProfileHFEMN_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
-  hname = "GProfileHFHADN_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
-  hname = "TProfileHFEMP_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
-  hname = "TProfileHFHADP_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
-  hname = "TProfileHFEMN_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
-  hname = "TProfileHFHADN_E";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
+  // ... Shower profile histos ...
+  TString pref[3] = {"G", "T", "Emax"};
+  for (int i=0; i<3; i++){
+    hname = pref[i]+"ProfileHFEMP_E";
+    m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
+    hname = pref[i]+"ProfileHFHADP_E";
+    m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
+    hname = pref[i]+"ProfileHFEMN_E";
+    m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
+    hname = pref[i]+"ProfileHFHADN_E";
+    m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 37, -18.5, 18.5, 37 , -18.5 , 18.5 );
+  } 
 
+  // ... Event Scan histos ...
   TFileDirectory subDir = fs->mkdir( "ScanEvents" );
   for (unsigned int i=0; i < EventsToScan_.size(); i++){
     hname = Form("GenEMP%i", EventsToScan_[i]) ;
@@ -317,10 +323,9 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
     hname = Form("ERClustersHADP%i", EventsToScan_[i]) ;
     m_Histos2D[hname] = subDir.make<TH2F>(hname, hname, 15, 27.5, 42.5,  75 , -0.5 , 74.5 );
   }
+  // ...
   
   hname = "pfclusHFEM_nhits";   
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 12 , -1.5 , 10.5 );
-  hname = "pfclusHFEM_nhits_threshold";   
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 12 , -1.5 , 10.5 );
   hname = "pfclusHFHAD_nhits";  
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 12 , -1.5 , 10.5 );
@@ -368,21 +373,16 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "match_ptfrac9";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100, 0. , 2.0 );
 
-  hname = "blocksHFEM_n";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 6 , -0.5 , 5.5 );
-  hname = "blocksHFHAD_n";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 6 , -0.5 , 5.5 );
-  hname = "blocksHFCH_n";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 6 , -0.5 , 5.5 );
+  hname = "pfclusEmax_frac";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100, 0. , 2.0 );
 
   hname = "pfcandHFEM_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 499.5 ); 
   hname = "pfcandHFHAD_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 499.5 );
   hname = "pfcandHFCH_n";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 1001 , -0.5 , 1000.5 );
-  hname = "PFcand_vs_PFtrack";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 1001 , -0.5 , 1000.5 , 1001 , -0.5 , 1000.5  ); 
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , -0.5 , 99.5 );
+
 
   hname = "pfcandHFEM_pt";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
@@ -409,46 +409,28 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
 
 
   hname = "pfcandHFEM_nelements" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 201 , -0.5, 200.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 25 , -0.5, 24.5 );
   hname = "pfcandHFHAD_nelements" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 201 , -0.5, 200.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 25 , -0.5, 24.5 );
 
 // ....
   hname = "pfcandCH_nelements" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
-
-  hname = "pfcandCH_nelementsHF" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
-
-  hname = "pfcandCH_nelementsHFEM" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
-
-  hname = "pfcandCH_nelementsHFHAD" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 25 , -0.5, 24.5 );
 
   hname = "pfcandCH_brem_nelements" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 25 , -0.5, 24.5 );
 
   hname = "pfcandCH_nobrem_nelements" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 25 , -0.5, 24.5 );
 
   hname = "pfcandCHPU_nelements";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
-
-  hname = "pfcandCHPU_nelementsHF";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
-
-  hname = "pfcandCHPU_nelementsHFHAD";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
-
-  hname = "pfcandCHPU_nelementsHFEM";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2001 , -0.5, 2000.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 25 , -0.5, 24.5 );
   
   hname = "pfcandCHPUinHF_nelements";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 201 , -0.5, 200.5 ); 
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 25 , -0.5, 24.5 ); 
 
   hname = "pfcandCHPUinHF_pt_nelements";
-  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 200 , 0. , 10.,  2001 , -0.5, 2000.5  );
+  m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 200 , 0. , 10.,  25 , -0.5, 24.5  );
 
 // ....
 
@@ -481,6 +463,13 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "Eratio_PFcandNonTtoGen";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
 
+  hname = "Eratio_PFcandEM1toGen";  
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  hname = "Eratio_PFcandHAD1toGen";  
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  hname = "Eratio_PFcandEMHAD1toGen";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+
   hname = "PovGenE_brem";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
   hname = "PovGenE_nobrem";
@@ -498,19 +487,49 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "EovPPU_nobrem";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 5. );
 
-  hname = "HFCH_DR_track_HFclusters" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 4. );
 
-  hname = "pfcandCH1ele_drmin" ;
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 4. );
 
-  TFileDirectory subDir_offset = fs->mkdir( "OffsetPlots" );
+// ... Noise study histos ...
+  TFileDirectory  subDir2 = fs->mkdir( "NoiseHistos" );
+  for (int i=29; i< 42; i++){
+    hname = Form("NoiseLong_ietaP%i",i);
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , -5. , 5. );
+    hname = Form("NoiseLong_ietaN%i",i);               
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , -5. , 5. );
+    hname = Form("NoiseShort_ietaP%i",i);               
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , -5. , 5. );
+    hname = Form("NoiseShort_ietaN%i",i);
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , -5. , 5. );
+
+    hname = Form("NoiseHFEM_ietaP%i",i);
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , 0. , 20. );
+    hname = Form("NoiseHFEM_ietaN%i",i);
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , 0. , 20. );
+    hname = Form("NoiseHFHAD_ietaP%i",i);
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , 0. , 20. );
+    hname = Form("NoiseHFHAD_ietaN%i",i);
+    m_Histos1D[hname] = subDir2.make<TH1F>(hname, hname , 100 , 0. , 20. );
+
+  }
+// ...
+
+  hname = "HFEM_5ov1" ;
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 5. );
+  hname = "HFEM_9ov1" ;
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 5. );
+  hname = "HFHAD_5ov1" ;
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 5. );
+  hname = "HFHAD_9ov1" ;
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 5. );
+
+
+// ... offset histos ...
   for (int i_id=0; i_id<numFlavors; i_id++){
     for (int i_nPU=0; i_nPU<25; i_nPU++){
       hname = Form("edensity_eta_nPU%i_",i_nPU) + ids[i_id];
-      m_Profiles[hname] = subDir_offset.make<TProfile>(hname, hname, ETA_BINS, etabins);
+      m_Profiles[hname] = fs->make<TProfile>(hname, hname, ETA_BINS, etabins);
       hname = Form("ptdensity_eta_nPU%i_",i_nPU) + ids[i_id];
-      m_Profiles[hname] = subDir_offset.make<TProfile>(hname, hname, ETA_BINS, etabins);
+      m_Profiles[hname] = fs->make<TProfile>(hname, hname, ETA_BINS, etabins);
     }
   }
 }
@@ -536,7 +555,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   using namespace edm;
 
   edm::Handle<reco::GenParticleCollection> genpars; iEvent.getByToken(genparToken_, genpars);
-  edm::Handle<CaloParticleCollection> calopars; iEvent.getByToken(caloparToken_, calopars);
+//  edm::Handle<CaloParticleCollection> calopars; iEvent.getByToken(caloparToken_, calopars);
   edm::Handle<reco::VertexCollection> vertices; iEvent.getByToken(vertexToken_, vertices);
   edm::Handle<std::vector<reco::PFCandidate>> pfcands; iEvent.getByToken(pfcandToken_, pfcands);
   edm::Handle<std::vector<reco::PFCluster>> pfclustersHF; iEvent.getByToken(pfclusterHFToken_, pfclustersHF);
@@ -554,7 +573,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   it = std::find (EventsToScan_.begin(), EventsToScan_.end(), nev);
   if (it != EventsToScan_.end()){
     scan = true ;
-    if (debug_)
+    if (debug_  && scan)
     LogPrint("PFTrackHFAnalyzer") << boost::format(" Will scan this event  %i") % EventsToScan_[it-EventsToScan_.begin()] ;
   }
 
@@ -581,16 +600,19 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   }
   if(genP_pt < ptlow_ || genP_pt > pthigh_ || fabs(genP_eta) < etalow_ || fabs(genP_eta) > etahigh_) return ;
   FillHist1D("gen_pt",  genP_pt,  1. );
+  FillHist1D("gen_pt",  genN_pt,  1. );
   FillHist1D("gen_eta", genP_eta,  1. );
+  FillHist1D("gen_eta", genN_eta,  1. );
 
 
+/*
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== calopars: =========== "     << calopars->size();
   for(const auto& calopar : *(calopars.product()) ){
     if (debug_ && scan)
     LogPrint("PFTrackHFAnalyzer") << boost::format("calopar (pt,eta,phi): (%6.1f, %6.2f, %6.2f)") % calopar.pt() % calopar.eta() % calopar.phi();
   }
-
+*/
  
    double mu = 0. ;
    std::vector<PileupSummaryInfo>::const_iterator pileupinfo;
@@ -613,12 +635,11 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   } 
   FillHist1D("pv_n", vertices->size(),  1. );
 
-
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pftracks: =========== "     << pftracks->size();
-  int pftrack_n = 0,  pftrack_npos = 0, pftrack_nneg = 0, pftrackHF_n = 0;
-  double trkP_P = -1., trkP_pt  = -1., trkP_pterror = -1., trkP_eta = 0., trkP_phi = 0., trkP_etaHF = 0., trkP_phiHF = 0.,
-         trkN_P = -1., trkN_pt  = -1., trkN_pterror = -1., trkN_eta = 0., trkN_phi = 0., trkN_etaHF = 0., trkN_phiHF = 0.;
+  int pftrack_n = 0,  pftrackHF_n = 0;
+  double trkP_P = -1., trkP_pt  = -1., trkP_pterror = -1., trkP_eta = 0., trkP_phi = 0.,
+         trkN_P = -1., trkN_pt  = -1., trkN_pterror = -1., trkN_eta = 0., trkN_phi = 0.;
   int    trkP_ieta1 = -1, trkP_ieta2 = -1, trkP_iphi1 = -1, trkP_iphi2 = -1,
          trkN_ieta1 = -1, trkN_ieta2 = -1, trkN_iphi1 = -1, trkN_iphi2 = -1;
 
@@ -628,27 +649,21 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     for(const auto& pftrack : *(pftracks.product()) ){  
       const reco::TrackRef trackref = pftrack.trackRef();
       double deltar = deltaR(genpar, (*trackref));
-      if(deltar < deltarMin){
+      if(deltar < deltarMin){//Not using deltaRmin yet
         deltarMin = deltar ;
-        constexpr reco::PFTrajectoryPoint::LayerType VFcalEntrance = reco::PFTrajectoryPoint::VFcalEntrance;
-        const reco::PFTrajectoryPoint& tkAtHF = pftrack.extrapolatedPoint( VFcalEntrance );
         if(genpar.eta() > 0){
           trkP_P   = trackref->p(); 
           trkP_pt  = trackref->pt(); 
           trkP_pterror = trackref->ptError();
           trkP_eta = trackref->eta();
-          //trkP_phi = trackref->phi();
-          trkP_etaHF = tkAtHF.positionREP().Eta();
-          trkP_phiHF = tkAtHF.positionREP().Phi();
+          trkP_phi = trackref->phi();
           trackrefP = trackref ;
         } else {
           trkN_P   = trackref->p();
           trkN_pt  = trackref->pt();
           trkN_pterror = trackref->ptError();
           trkN_eta = trackref->eta();
-          //trkN_phi = trackref->phi();
-          trkN_etaHF = tkAtHF.positionREP().Eta();
-          trkN_phiHF = tkAtHF.positionREP().Phi();
+          trkN_phi = trackref->phi();
           trackrefN = trackref ;
         }
       }
@@ -662,10 +677,10 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   FillHist1D("pftrack_pull",  ((trkN_pt-genN_pt)/trkN_pterror),  1. );
 
   for(const auto& pftrack : *(pftracks.product()) ){
-    pftrack_n++; 
+    pftrack_n++;
     const reco::TrackRef trackref = pftrack.trackRef();
-    if(trackref->eta() > 0.)   pftrack_npos++ ;
-    if(trackref->eta() < 0.)   pftrack_nneg++ ;
+    if (debug_ && scan)
+    LogPrint("PFTrackHFAnalyzer") << boost::format("pftrack (pt,eta,phi)@origin : (%6.1f +- %4.1f, %6.2f, %6.2f) ") % trackref->pt() % trackref->ptError() % trackref->eta() % trackref->phi() ;
     if(fabs(trackref->eta()) > 3.)   pftrackHF_n++ ;
     if(trackref != trackrefP && trackref != trackrefN){
       FillHist1D("pfPUtrack_pt",  trackref->pt(),  1. );
@@ -673,16 +688,10 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       FillHist2D("pfPUtrack_etapt", trackref->eta(), trackref->pt(),  1. );
       if(fabs(trackref->eta()) > 3.) FillHist1D("pfPUtrackHF_pt",  trackref->pt(),  1. );
     } 
-
-    if (debug_ && scan){
-      // looping over all points on the trajectory
-      std::vector<reco::PFTrajectoryPoint> trajectoryPoints = pftrack.trajectoryPoints();
-      for (unsigned ip = 0; ip<trajectoryPoints.size(); ++ip){
-      //ctmp  if (trajectoryPoints[ip].isValid()) cout << trajectoryPoints[ip] <<endl;
-        if (fabs(trackref->eta()) < 1.0 && trackref->pt() < 3.0 ) cout << trajectoryPoints[ip] <<endl;
-      }
-    }
-
+ 
+/*
+    std::vector<reco::PFTrajectoryPoint> trajectoryPoints = pftrack.trajectoryPoints();
+    
     constexpr reco::PFTrajectoryPoint::LayerType VFcalEntrance =
     reco::PFTrajectoryPoint::VFcalEntrance;
     
@@ -691,17 +700,16 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     
     const double tracketa = tkAtHF.positionREP().Eta();
     const double trackphi = tkAtHF.positionREP().Phi();
-
-    if (debug_ && scan)
+    
     LogPrint("PFTrackHFAnalyzer") << boost::format("pftrack (pt,eta,phi)@origin (eta,phi)@HF: (%6.1f +- %4.1f, %6.2f, %6.2f) (%6.2f, %6.2f)")
     % trackref->pt() % trackref->ptError() % trackref->eta() % trackref->phi() % tracketa % trackphi;
+*/
 
   }
-  if (debug_)
+  if (debug_  && scan)
   if(pftrack_n> 2) LogPrint("PFTrackHFAnalyzer") << boost::format(" Warning!! More than two tracks. Scan this event # %i") % nev  ;
   FillHist1D("pftrackHF_n",  pftrackHF_n,  1. );
   FillHist1D("pftrackHF_n_range",  pftrackHF_n,  1. );
-
 
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n  =========== HFRecHits: ===========  " <<  hfRecHits->size();;
@@ -715,15 +723,54 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     int iphi = rechit.id().iphi() ;
     int idep = rechit.id().depth() ;
     double E = rechit.energy() ;
-    if (debugRecHit_ && nev==1)
+    if (debugRecHit_ && scan)
     LogPrint("PFTrackHFAnalyzer") << boost::format(" hfrechit (ieta, iphi, depth, E): (%3d, %3d, %2d, %6.2f)") % ieta % iphi % idep % E ;
 
     auto thisCell = HFGeom->getGeometry(rechit.id().rawId());
     const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
-    if (debugRecHit_ && nev==1)
-    LogPrint("PFTrackHFAnalyzer") << boost::format(" corners (eta, eta, eta, eta, phi, phi, phi, phi): (%6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f)")
-        % cv[0].eta() % cv[1].eta() % cv[2].eta() % cv[3].eta() % cv[0].phi() % cv[1].phi() % cv[2].phi() % cv[3].phi()  ;
-    
+// .. This printout is too long ...
+    if (debugRecHit_  && scan){
+      LogPrint("PFTrackHFAnalyzer") << boost::format(" corners (eta, eta, eta, eta, phi, phi, phi, phi): (%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f)")
+          % cv[0].eta() % cv[1].eta() % cv[2].eta() % cv[3].eta() % cv[0].phi() % cv[1].phi() % cv[2].phi() % cv[3].phi()  ;
+   
+    }
+// ... HFRecHit && pfrechitsHF noise study
+
+  // This loop is needed for pfrechitsHF noise: in pfrechitsHF only rechits above some E are kept.
+  // So if we only use these for plotting, it will artifically show high noise, because the cells
+  // with no/low energy won't enter in histo. Instead we are doing this inside HFRecHit loop,
+  // where loop is over all 1728 rechits in each event. For those where there is no matching pfrechitsHF
+  // Epf = 0 is used.
+  
+    double Epf = 0. ;  
+    for(const auto& pfrechit : *(pfrechitsHF.product()) ){
+      int ietapf = HcalDetId(pfrechit.detId()).ieta() ; 
+      int iphipf = HcalDetId(pfrechit.detId()).iphi() ; 
+      int ideppf = HcalDetId(pfrechit.detId()).depth() ;
+      if(ietapf == ieta && iphipf == iphi && ideppf == idep){
+        Epf = pfrechit.energy() ;
+//        cout << " Matched Epf " << Epf << endl ;
+        break ;
+      } 
+    }  
+
+    double phic = (static_cast<double>(cv[0].phi()) + static_cast<double>(cv[2].phi())) / 2.0; 
+    if (cv[0].phi() < cv[2].phi()) phic = M_PI + phic ;
+    if( ieta > 0 && fabs(deltaPhi(phic, genP_phi )) > 0.5*M_PI ){
+      hname =  idep == 1 ? Form("NoiseLong_ietaP%i",ieta) : Form("NoiseShort_ietaP%i",ieta)  ; 
+      FillHist1D(hname , E , 1.) ;    
+      hname =  idep == 1 ? Form("NoiseHFEM_ietaP%i",ieta) : Form("NoiseHFHAD_ietaP%i",ieta)  ;
+      FillHist1D(hname , Epf , 1.) ;
+    }    
+    if( ieta < 0 && fabs(deltaPhi(phic, genN_phi )) > 0.5*M_PI ){
+      hname =  idep == 1 ? Form("NoiseLong_ietaN%i",abs(ieta)) : Form("NoiseShort_ietaN%i",abs(ieta))  ;
+      FillHist1D(hname , E , 1.) ;
+      hname =  idep == 1 ? Form("NoiseHFEM_ietaN%i",abs(ieta)) : Form("NoiseHFHAD_ietaN%i",abs(ieta))  ;
+      FillHist1D(hname , Epf , 1.) ;
+    }
+
+// ... HFRecHit && pfrechitsHF noise study: END
+
     bool incell ;
     incell = IsInCell(genP_eta, genP_phi, cv) ;  
     if(incell) {
@@ -741,7 +788,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         genN_ieta2 = ieta ; genN_iphi2 = iphi ;
       }
     }
-    incell = IsInCell(trkP_etaHF, trkP_phiHF, cv) ;
+    incell = IsInCell(trkP_eta, trkP_phi, cv) ;
     if(incell) {
       if(idep == 1){
         trkP_ieta1 = ieta ; trkP_iphi1 = iphi ;
@@ -749,7 +796,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         trkP_ieta2 = ieta ; trkP_iphi2 = iphi ;
       }
     }
-    incell = IsInCell(trkN_etaHF, trkN_phiHF, cv) ;
+    incell = IsInCell(trkN_eta, trkN_phi, cv) ;
     if(incell) {
       if(idep == 1){
         trkN_ieta1 = ieta ; trkN_iphi1 = iphi ;
@@ -778,25 +825,23 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     LogPrint("PFTrackHFAnalyzer") << boost::format("   Depth1 (ieta iphi): (%3d, %3d)") % genN_ieta1 % genN_iphi1  ;
     LogPrint("PFTrackHFAnalyzer") << boost::format("   Depth2 (ieta iphi): (%3d, %3d)") % genN_ieta2 % genN_iphi2  ;
 
-    LogPrint("PFTrackHFAnalyzer") << boost::format("\nTrack in positive eta with (eta phi): (%6.2f, %6.2f)") % trkP_etaHF % trkP_phiHF;
+    LogPrint("PFTrackHFAnalyzer") << boost::format("\nTrack in positive eta with (eta phi): (%6.2f, %6.2f)") % trkP_eta % trkP_phi;
     LogPrint("PFTrackHFAnalyzer") << boost::format("   Depth1 (ieta iphi): (%3d, %3d)") % trkP_ieta1 % trkP_iphi1  ;
     LogPrint("PFTrackHFAnalyzer") << boost::format("   Depth2 (ieta iphi): (%3d, %3d)") % trkP_ieta2 % trkP_iphi2  ;
-    LogPrint("PFTrackHFAnalyzer") << boost::format(" Track in negative eta with (eta phi): (%6.2f, %6.2f)") % trkN_etaHF % trkN_phiHF ;
+    LogPrint("PFTrackHFAnalyzer") << boost::format(" Track in negative eta with (eta phi): (%6.2f, %6.2f)") % trkN_eta % trkN_phi ;
     LogPrint("PFTrackHFAnalyzer") << boost::format("   Depth1 (ieta iphi): (%3d, %3d)") % trkN_ieta1 % trkN_iphi1  ;
     LogPrint("PFTrackHFAnalyzer") << boost::format("   Depth2 (ieta iphi): (%3d, %3d)") % trkN_ieta2 % trkN_iphi2  ;
   }
 
-
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pfrechitsHF: =========== "  << pfrechitsHF->size();
-  unsigned pfrechitHFEM_n = 0, pfrechitHFHAD_n = 0 ;
-  map<unsigned, unsigned> pfrechitHFEM_n_ieta, pfrechitHFHAD_n_ieta ;
-  for (unsigned i=28; i<=41 ; ++i){
-    pfrechitHFEM_n_ieta.insert(make_pair(i,0));
-    pfrechitHFHAD_n_ieta.insert(make_pair(i,0));
-  }
+  int pfrechitHFEM_n = 0, pfrechitHFHAD_n = 0 ;
+  int pfrechitHFEMP_n = 0, pfrechitHFHADP_n = 0, pfrechitHFEMN_n = 0, pfrechitHFHADN_n = 0 ;
   double pfrechitHFEMP_Emax = -1.,  pfrechitHFHADP_Emax = -1.,
          pfrechitHFEMN_Emax = -1.,  pfrechitHFHADN_Emax = -1. ;
+
+  int EmaxP_ieta1 = 0, EmaxP_ieta2 = 0, EmaxP_iphi1 = 0, EmaxP_iphi2 = 0,
+      EmaxN_ieta1 = 0, EmaxN_ieta2 = 0, EmaxN_iphi1 = 0, EmaxN_iphi2 = 0;
 
   for(const auto& pfrechit : *(pfrechitsHF.product()) ){
     int ieta = HcalDetId(pfrechit.detId()).ieta() ;
@@ -806,54 +851,155 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     if (debug_ && scan)
     LogPrint("PFTrackHFAnalyzer") << boost::format(" pfrechit (ieta, iphi, depth, E): (%3d, %3d, %2d, %6.2f)")  % ieta % iphi % idep % E;
 
+    
+    double E_long, E_short ;
+    for(const auto& rechit : *(hfRecHits.product()) ){
+      int ieta_rec = rechit.id().ieta() ;
+      int iphi_rec = rechit.id().iphi() ;
+      int idep_rec = rechit.id().depth() ;
+      double E_rec = rechit.energy() ;
+      auto thisCell = HFGeom->getGeometry(rechit.id().rawId());
+      const CaloCellGeometry::CornersVec& cv = thisCell->getCorners();
+      if(ieta_rec == ieta && iphi_rec == iphi ){
+        if(idep_rec == 1){
+          E_long = E_rec ;
+        } else {
+          E_short = E_rec ;
+        }
+      } 
+    }
+    double ls = E_long - E_short ;
+    double s2 = 2.*E_short ;
+
+    if (debugRecHit_ && scan )
+    LogPrint("PFTrackHFAnalyzer") << 
+    boost::format("   from rechits (E_long, E_short, E_long-E_short, 2*E_short): (%6.2f, %6.2f, %6.2f, %6.2f)")  % E_long % E_short % ls % s2 ;
+
     if(idep == 1) { // HFEM
       pfrechitHFEM_n++ ;
-      pfrechitHFEM_n_ieta[abs(ieta)]++;
       FillHist1D("pfrechitHFEM_E", E, 1. );
       if(ieta > 0){
-        if(E > pfrechitHFEMP_Emax ) pfrechitHFEMP_Emax = E ; 
+        pfrechitHFEMP_n++ ;
+        if(E > pfrechitHFEMP_Emax ){
+          pfrechitHFEMP_Emax = E ; 
+          EmaxP_ieta1 = ieta ;
+          EmaxP_iphi1 = iphi ;
+        }
         FillHist2D("GProfileHFEMP_E", ieta-genP_ieta1 , idphi(iphi, genP_iphi1), E/genP_E);
         FillHist2D("TProfileHFEMP_E", ieta-trkP_ieta1 , idphi(iphi, trkP_iphi1), E/trkP_P);
       } else {
-        if(E > pfrechitHFEMN_Emax ) pfrechitHFEMN_Emax = E ;
+        pfrechitHFEMN_n++ ;
+        if(E > pfrechitHFEMN_Emax ){
+          pfrechitHFEMN_Emax = E ;
+          EmaxN_ieta1 = ieta ;
+          EmaxN_iphi1 = iphi ;
+        }
         FillHist2D("GProfileHFEMN_E", ieta-genN_ieta1,  idphi(iphi, genN_iphi1), E/genN_E);
         FillHist2D("TProfileHFEMN_E", ieta-trkN_ieta1,  idphi(iphi, trkN_iphi1), E/trkN_P);
       }
+      if( E < pfrechitHFEM_Emin ) pfrechitHFEM_Emin = E ;
     } else { // HFHAD
       pfrechitHFHAD_n++ ;
-      pfrechitHFHAD_n_ieta[abs(ieta)]++;
       FillHist1D("pfrechitHFHAD_E", E, 1. );
       if(ieta > 0){
-        if(E > pfrechitHFHADP_Emax ) pfrechitHFHADP_Emax = E ;
+        pfrechitHFHADP_n++ ;
+        if(E > pfrechitHFHADP_Emax ){
+          pfrechitHFHADP_Emax = E ;
+          EmaxP_ieta2 = ieta ;
+          EmaxP_iphi2 = iphi ;
+        }
         FillHist2D("GProfileHFHADP_E", ieta-genP_ieta2,  idphi(iphi, genP_iphi2), E/genP_E);
         FillHist2D("TProfileHFHADP_E", ieta-trkP_ieta2,  idphi(iphi, trkP_iphi2), E/trkP_P);
       } else {
-        if(E > pfrechitHFHADN_Emax ) pfrechitHFHADN_Emax = E ;
+        pfrechitHFHADN_n++ ;
+        if(E > pfrechitHFHADN_Emax ){
+          pfrechitHFHADN_Emax = E ;
+          EmaxN_ieta2 = ieta ;
+          EmaxN_iphi2 = iphi ;
+        }
         FillHist2D("GProfileHFHADN_E", ieta-genN_ieta2,  idphi(iphi, genN_iphi2), E/genN_E);
         FillHist2D("TProfileHFHADN_E", ieta-trkN_ieta2,  idphi(iphi, trkN_iphi2), E/trkN_P);
       }
+      if( E < pfrechitHFHAD_Emin ) pfrechitHFHAD_Emin = E ;
     }
-  } // end of loop over pfrechitsHF
+  } // end of loop obver pfrechitsHF
   if (debug_ && scan){
     LogPrint("PFTrackHFAnalyzer") << "  pfrechitsHFEM:  " << pfrechitHFEM_n;
     LogPrint("PFTrackHFAnalyzer") << "  pfrechitsHFHAD: " << pfrechitHFHAD_n;
+
+    LogPrint("PFTrackHFAnalyzer") << boost::format("  Positive eta: HFEM  rechit with maximum energy (ieta, iphi, E): ( %i, %i, %6.2f )") 
+      % EmaxP_ieta1 % EmaxP_iphi1 % pfrechitHFEMP_Emax ;
+    LogPrint("PFTrackHFAnalyzer") << boost::format("                HFHAD rechit with maximum energy (ieta, iphi, E): ( %i, %i, %6.2f )")
+      % EmaxP_ieta2 % EmaxP_iphi2 % pfrechitHFHADP_Emax ;
+    LogPrint("PFTrackHFAnalyzer") << boost::format("  Negative eta: HFEM  rechit with maximum energy (ieta, iphi, E): ( %i, %i, %6.2f )")
+      % EmaxN_ieta1 % EmaxN_iphi1 % pfrechitHFEMN_Emax ;
+    LogPrint("PFTrackHFAnalyzer") << boost::format("                HFHAD rechit with maximum energy (ieta, iphi, E): ( %i, %i, %6.2f )")
+      % EmaxN_ieta2 % EmaxN_iphi2 % pfrechitHFHADN_Emax ;
+
   }
   FillHist1D("pfrechitHFEM_n",  pfrechitHFEM_n,  1. );
   FillHist1D("pfrechitHFHAD_n", pfrechitHFHAD_n, 1. );
-  FillHist1D("pfrechitHFEM_occupancy",  double(pfrechitHFEM_n)/864.,  1. );
-  FillHist1D("pfrechitHFHAD_occupancy", double(pfrechitHFHAD_n)/864., 1. );
-  for (unsigned i=28; i<=41 ; ++i){
-    double n = i < 40 ? 2*36 : 2*18 ; 
-    FillHist2D("pfrechitHFEM_occupancy_vs_absieta",   i, double(pfrechitHFEM_n_ieta[i])/n,  1. );
-    FillHist2D("pfrechitHFHAD_occupancy_vs_absieta",  i, double(pfrechitHFHAD_n_ieta[i])/n,  1. );
-  }
-
+  FillHist1D("pfrechitHFEMP_n",  pfrechitHFEMP_n,  1. );
+  FillHist1D("pfrechitHFHADP_n", pfrechitHFHADP_n, 1. );
+  FillHist1D("pfrechitHFEMN_n",  pfrechitHFEMN_n,  1. );
+  FillHist1D("pfrechitHFHADN_n", pfrechitHFHADN_n, 1. );
   FillHist1D("pfrechitHFEM_Emax",  pfrechitHFEMP_Emax,  1. );
   FillHist1D("pfrechitHFEM_Emax",  pfrechitHFEMN_Emax,  1. );
   FillHist1D("pfrechitHFHAD_Emax", pfrechitHFHADP_Emax,  1. );
   FillHist1D("pfrechitHFHAD_Emax", pfrechitHFHADN_Emax,  1. );
   FillHist1D("pfrechitHF_Emax",  pfrechitHFEMP_Emax > pfrechitHFHADP_Emax ? pfrechitHFEMP_Emax : pfrechitHFHADP_Emax ,  1. );
   FillHist1D("pfrechitHF_Emax",  pfrechitHFEMN_Emax > pfrechitHFHADN_Emax ? pfrechitHFEMN_Emax : pfrechitHFHADN_Emax ,  1. );
+
+  // ... Second loop over pfrechitsHF ...
+  double sum4HFEMP = 0., sum4HFHADP = 0., sumXHFEMP = 0., sumXHFHADP = 0.,
+         sum4HFEMN = 0., sum4HFHADN = 0., sumXHFEMN = 0., sumXHFHADN = 0.;
+  for(const auto& pfrechit : *(pfrechitsHF.product()) ){
+    int ieta = HcalDetId(pfrechit.detId()).ieta() ;
+    int iphi = HcalDetId(pfrechit.detId()).iphi() ;
+    int idep = HcalDetId(pfrechit.detId()).depth() ;
+    double E = pfrechit.energy() ;
+  
+    if(idep == 1) { // HFEM
+      if(ieta > 0){
+        FillHist2D("EmaxProfileHFEMP_E", ieta-EmaxP_ieta1 , idphi(iphi, EmaxP_iphi1), E/pfrechitHFEMP_Emax);
+        if( IsIn4(ieta, EmaxP_ieta1, iphi, EmaxP_iphi1) ) sum4HFEMP += E ;
+        if( IsInX(ieta, EmaxP_ieta1, iphi, EmaxP_iphi1) ) sumXHFEMP += E ;
+      } else {
+        FillHist2D("EmaxProfileHFEMN_E", ieta-EmaxN_ieta1 , idphi(iphi, EmaxN_iphi1), E/pfrechitHFEMN_Emax);
+        if( IsIn4(ieta, EmaxN_ieta1, iphi, EmaxN_iphi1) ) sum4HFEMN += E ;
+        if( IsInX(ieta, EmaxN_ieta1, iphi, EmaxN_iphi1) ) sumXHFEMN += E ;
+      }
+    } else { // HFHAD
+      if(ieta > 0){
+        FillHist2D("EmaxProfileHFHADP_E", ieta-EmaxP_ieta2 , idphi(iphi, EmaxP_iphi2), E/pfrechitHFHADP_Emax);
+        if( IsIn4(ieta, EmaxP_ieta2, iphi, EmaxP_iphi2) ) sum4HFHADP += E ;
+        if( IsInX(ieta, EmaxP_ieta2, iphi, EmaxP_iphi2) ) sumXHFHADP += E ;
+      } else {
+        FillHist2D("EmaxProfileHFHADN_E", ieta-EmaxN_ieta2 , idphi(iphi, EmaxN_iphi2), E/pfrechitHFHADN_Emax);
+        if( IsIn4(ieta, EmaxN_ieta2, iphi, EmaxN_iphi2) ) sum4HFHADN += E ;
+        if( IsInX(ieta, EmaxN_ieta2, iphi, EmaxN_iphi2) ) sumXHFHADN += E ;
+      }
+    }
+
+  }
+
+  if (pfrechitHFEMP_Emax>0) {
+  FillHist1D("HFEM_5ov1", (pfrechitHFEMP_Emax+sum4HFEMP)/pfrechitHFEMP_Emax  , 1.) ;
+  FillHist1D("HFEM_9ov1", (pfrechitHFEMP_Emax+sum4HFEMP+sumXHFEMP)/pfrechitHFEMP_Emax  , 1.) ;}
+
+  if (pfrechitHFEMN_Emax>0) {
+  FillHist1D("HFEM_5ov1", (pfrechitHFEMN_Emax+sum4HFEMN)/pfrechitHFEMN_Emax  , 1.) ; 
+  FillHist1D("HFEM_9ov1", (pfrechitHFEMN_Emax+sum4HFEMN+sumXHFEMN)/pfrechitHFEMN_Emax  , 1.) ;}
+
+  if (pfrechitHFHADP_Emax>0){
+  FillHist1D("HFHAD_5ov1", (pfrechitHFHADP_Emax+sum4HFHADP)/pfrechitHFHADP_Emax  , 1.) ;
+  FillHist1D("HFHAD_9ov1", (pfrechitHFHADP_Emax+sum4HFHADP+sumXHFHADP)/pfrechitHFHADP_Emax  , 1.) ;}
+
+  if (pfrechitHFHADN_Emax>0){
+  FillHist1D("HFHAD_5ov1", (pfrechitHFHADN_Emax+sum4HFHADN)/pfrechitHFHADN_Emax  , 1.) ;
+  FillHist1D("HFHAD_9ov1", (pfrechitHFHADN_Emax+sum4HFHADN+sumXHFHADN)/pfrechitHFHADN_Emax  , 1.) ;}
+ 
+
 
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pfclustersHF: =========== " << pfclustersHF->size();
@@ -877,8 +1023,9 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     int layer  = pfclus.layer() ; 
     int idep   = fabs(pfclus.depth() - 1.) < 0.001 ? 1 : 2 ;   
     const std::vector<reco::PFRecHitFraction> &fracs = pfclus.recHitFractions();   
-    const std::vector<std::pair<DetId, float>> &hfracs = pfclus.hitsAndFractions();
+    //const std::vector<std::pair<DetId, float>> &hfracs = pfclus.hitsAndFractions();
     unsigned nhits = fracs.size();
+    if((nhits>1) && !(idep==1)) cout <<"$$$$$$$$$$$$$$$$$$$$$$$$ EVENT "<< nev <<" HAS CLUSTERING IN HFHAD $$$$$$$$$$$$$$$$$$$$$$$$"<<endl;
 
     if (debug_ && scan)
     LogPrint("PFTrackHFAnalyzer") << boost::format("pfclus (pt,E,eta,phi,layer,depth,nhits): (%6.2f, %6.2f, %6.2f, %6.2f, %i, %i, %i)")
@@ -886,7 +1033,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     bool matchP = false,  match4P = false,  match8P = false,
          matchN = false,  match4N = false,  match8N = false;
-    int nhits_threshold = 0;
+
     for(unsigned i=0; i<nhits; i++) { 
 //    const auto& id = hfracs[i].first.rawId();
       const reco::PFRecHitRef& pfRecHits = fracs[i].recHitRef();
@@ -894,7 +1041,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       double frac      = fracs[i].fraction();
       int ieta  = HcalDetId(pfRecHits->detId()).ieta() ;
       int iphi  = HcalDetId(pfRecHits->detId()).iphi() ;
-      if (frac > 0.01) nhits_threshold++ ;
     
       if (scan){ 
         if(idep == 1){
@@ -917,6 +1063,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       if (debug_ && scan)
       LogPrint("PFTrackHFAnalyzer") << boost::format(" pfrechit (ieta, iphi, depth, E, frac): (%3d, %3d, %2d, %6.2f, %6.2f)")
       % HcalDetId(pfRecHits->detId()).ieta() % HcalDetId(pfRecHits->detId()).iphi()  % HcalDetId(pfRecHits->detId()).depth() % rawenergy % frac ;
+
 
       if(idep == 1){
         if( ieta == genP_ieta1 && iphi == genP_iphi1 ) matchP = true ;
@@ -942,7 +1089,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         LogPrint("PFTrackHFAnalyzer") << boost::format(" => Cluster matched to genN particle  with (eta phi E) (ieta1 iphi1) (ieta2 iphi2):  (%6.2f, %6.2f, %6.2f), (%i, %i), (%i, %i)")
         % genN_eta % genN_phi % genN_E % genN_ieta1 % genN_iphi1 % genN_ieta2 % genN_iphi2 ;
       }  
-    } // end of loop over PFRecHits
+    }
 
     if(matchP) {
       if (idep == 1) pfclusHFEMP_nmatch++ ;
@@ -979,31 +1126,32 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     if(idep == 1){
       pfclusHFEM_n++  ;
+      if( eta > 0 )  pfclusHFEMP_n++  ;
       FillHist1D("pfclusHFEM_nhits",  nhits, 1.);
-      FillHist1D("pfclusHFEM_nhits_threshold",  nhits_threshold, 1.);
       FillHist1D("pfclusHFEM_E", E, 1.);
       FillHist1D("pfclusHFEM_pt",pt, 1.);
       if(eta > 0){
-        pfclusHFEMP_n++  ;
         if(E > pfclusHFEMP_Emax ) pfclusHFEMP_Emax  = E ;
         if(pt> pfclusHFEMP_ptmax) pfclusHFEMP_ptmax = pt ;
       } else {
         if(E > pfclusHFEMN_Emax ) pfclusHFEMN_Emax  = E ;
         if(pt> pfclusHFEMN_ptmax) pfclusHFEMN_ptmax = pt ;
       }
+      if(E < pfclusHFEM_Emin ) pfclusHFEM_Emin = E ;
     } else {
-      pfclusHFHAD_n++ ; 
+      pfclusHFHAD_n++ ;
+      if( eta > 0 )  pfclusHFHADP_n++  ;
       FillHist1D("pfclusHFHAD_nhits", nhits, 1.);
       FillHist1D("pfclusHFHAD_E", E, 1.);
       FillHist1D("pfclusHFHAD_pt",pt, 1.);
       if(eta > 0){
-        pfclusHFHADP_n++  ;
         if(E > pfclusHFHADP_Emax ) pfclusHFHADP_Emax  = E ;
         if(pt> pfclusHFHADP_ptmax) pfclusHFHADP_ptmax = pt ;
       } else {
         if(E > pfclusHFHADN_Emax ) pfclusHFHADN_Emax  = E ;
         if(pt> pfclusHFHADN_ptmax) pfclusHFHADN_ptmax = pt ;
       }
+      if(E < pfclusHFHAD_Emin ) pfclusHFHAD_Emin = E ;
     } 
   } // end of loop over pfclusHF
 
@@ -1077,7 +1225,11 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   FillHist1D("pfclusHF_ptmax",  pfclusHFEMP_ptmax > pfclusHFHADP_ptmax ? pfclusHFEMP_ptmax : pfclusHFHADP_ptmax ,  1. );
   FillHist1D("pfclusHF_ptmax",  pfclusHFEMN_ptmax > pfclusHFHADN_ptmax ? pfclusHFEMN_ptmax : pfclusHFHADN_ptmax ,  1. );
 
+  FillHist1D("pfclusEmax_frac",  (pfclusHFEMP_Emax+pfclusHFHADP_Emax)/genP_E, 1.);
+  FillHist1D("pfclusEmax_frac",  (pfclusHFEMN_Emax+pfclusHFHADN_Emax)/genN_E, 1.);
 
+
+/*
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pfcands: =========== " << pfcands->size();
   int pfcandHFEM_n = 0, pfcandHFHAD_n = 0, pfcandHFCH_n = 0 ;
@@ -1091,8 +1243,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     double pt  = pfcand.pt() ;
     double E   = pfcand.energy() ;
     reco::PFCandidate::ParticleType id = pfcand.particleId();
-    const reco::TrackRef trackrefPF = pfcand.trackRef();
-    //reco::TrackRef trackrefPF = pfcand.trackRef().get();
 
     const reco::PFCandidate::ElementsInBlocks& theElements = pfcand.elementsInBlocks();
     int nblocks = theElements.size() ;
@@ -1104,10 +1254,10 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 //      continue ;
     }
 
+
     const reco::PFBlockRef blockRef = nblocks > 0 ? theElements[0].first : edm::Ref<std::vector<reco::PFBlock> >() ;
     const edm::OwnVector<reco::PFBlockElement>& elements = nblocks > 0 ? blockRef->elements() : 0. ;
-    unsigned int nele = elements.size() ;	
-    unsigned int neleHFHAD = 0, neleHFEM = 0;
+    unsigned int nele = elements.size() ;
 
     bool isHF = false, hasBREM = false ;
     vector<reco::PFRecHitRef> PFrechitsHF;
@@ -1117,9 +1267,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      reco::PFBlockElement::Type type = elements[el].type();
 
       if(type == reco::PFBlockElement::HFEM || type == reco::PFBlockElement::HFHAD){
-        if (type == reco::PFBlockElement::HFEM) neleHFEM++;
-        else if (type == reco::PFBlockElement::HFHAD) neleHFHAD++;
-        const std::vector<reco::PFRecHitFraction> &fracs = elements[el].clusterRef()->recHitFractions();
+      const std::vector<reco::PFRecHitFraction> &fracs = elements[el].clusterRef()->recHitFractions();
         isHF = true ; 
         unsigned nhits = fracs.size();
         for(unsigned i=0; i<nhits; i++) {
@@ -1129,41 +1277,26 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         }
       }
       if(type == reco::PFBlockElement::BREM) hasBREM = true ;
-    }  // end of loop over elements
+      if(type == reco::PFBlockElement::TRACK){ 
+        if(elements[el].trackRef() == trackrefP){ 
+          track_poseta = true ; track_poseta_n++ ;
+    //ctmp      if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_poseta ");
+        }
+        if(elements[el].trackRef() == trackrefN){ 
+          track_negeta = true ; track_negeta_n++ ;
+//ctmp          if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_negeta ");
+        }
+      }
+    }
 
     if (id == reco::PFCandidate::h ){
-      if(trackrefPF == trackrefP ){
-        track_poseta = true ; track_poseta_n++ ;}
-      else if(trackrefPF == trackrefN ){
-        track_negeta = true ; track_negeta_n++ ;}
-      if(track_poseta||track_negeta){
+      if(track_poseta || track_negeta){
         FillHist1D("pfcandCH_nelements", nele, 1. );
-        FillHist1D("pfcandCH_nelementsHF", neleHFHAD+neleHFEM, 1. );
-        FillHist1D("pfcandCH_nelementsHFHAD", neleHFHAD, 1. );
-        FillHist1D("pfcandCH_nelementsHFEM", neleHFEM, 1. );
         FillHist1D("pfcandCH_nhits", PFrechitsHF.size(), 1. );
         if(hasBREM) FillHist1D("pfcandCH_brem_nelements",   nele, 1. );
         else        FillHist1D("pfcandCH_nobrem_nelements", nele, 1. );
-
-        if(nele == 1){ // study why nele = 1 for "our" track
-          if(track_poseta) FillHist1D("pfcandCH1ele_pftrackHF_n", pftrack_npos, 1. );
-          if(track_negeta) FillHist1D("pfcandCH1ele_pftrackHF_n", pftrack_nneg, 1. );
-          double drmin = 3.5 ;
-          for(const auto& pfclus : *(pfclustersHF.product()) ){ // find closest cluster
-            double cluseta = pfclus.eta() ;
-            double clusphi = pfclus.phi() ;
-            double trk_etaHF = track_poseta ? trkP_etaHF : trkN_etaHF ;
-            double trk_phiHF = track_poseta ? trkP_phiHF : trkN_phiHF ;
-            double dr = deltaR(trk_etaHF, trk_phiHF,  cluseta,  clusphi);
-            if(dr < drmin) drmin = dr ;
-          }
-          FillHist1D("pfcandCH1ele_drmin", drmin, 1);
-        }
       } else {
         FillHist1D("pfcandCHPU_nelements", nele, 1. );
-        FillHist1D("pfcandCHPU_nelementsHF", neleHFEM+neleHFHAD, 1. );
-        FillHist1D("pfcandCHPU_nelementsHFHAD", neleHFHAD, 1. );
-        FillHist1D("pfcandCHPU_nelementsHFEM", neleHFEM, 1. );
         if(fabs(eta)>3.){
           FillHist1D("pfcandCHPUinHF_nelements", nele, 1. );
           FillHist1D("pfcandCHPUinHF_nhits", PFrechitsHF.size(), 1. );
@@ -1204,6 +1337,14 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         LogPrint("PFTrackHFAnalyzer") << boost::format("   track in the block (pt, p, eta, phi, type): (%6.2f, %6.2f, %6.2f, %6.2f, %i)") %
         elements[el].trackRef()->pt() % elements[el].trackRef()->p() % elements[el].trackRef()->eta() % elements[el].trackRef()->phi() % type ;
         tp = elements[el].trackRef()->p() ;
+        if(elements[el].trackRef() == trackrefP){ 
+          track_poseta = true ; track_poseta_n++ ; 
+          if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_poseta "); 
+        }
+        if(elements[el].trackRef() == trackrefN){ 
+          track_negeta = true ; track_negeta_n++ ;
+          if (debug_ && scan) LogPrint("PFTrackHFAnalyzer") << boost::format(" The above is track_negeta ");  
+        }
       } else if(type == reco::PFBlockElement::HFEM || type == reco::PFBlockElement::HFHAD){
         if (debug_ && scan)
         LogPrint("PFTrackHFAnalyzer") << boost::format("   cluster in the block (pt, e, eta, phi, type): (%6.2f, %6.2f, %6.2f, %6.2f, %i)") %
@@ -1212,14 +1353,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         const std::vector<std::pair<DetId, float>> &hfracs = elements[el].clusterRef()->hitsAndFractions();
         ehf += elements[el].clusterRef()->energy() ;
         unsigned nhits = fracs.size();
-
-        if(track_poseta || track_negeta){
-          double trk_etaHF = track_poseta ? trkP_etaHF : trkN_etaHF ;
-          double trk_phiHF = track_poseta ? trkP_phiHF : trkN_phiHF ;
-          double dr = deltaR(trk_etaHF, trk_phiHF,  elements[el].clusterRef()->eta(),  elements[el].clusterRef()->phi());
-          FillHist1D("HFCH_DR_track_HFclusters", dr, 1);
-        }
-
         for(unsigned i=0; i<nhits; i++) {
           const reco::PFRecHitRef& pfRecHits = fracs[i].recHitRef();
 
@@ -1260,29 +1393,24 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         elements[el].Dump(std::cout) ;
         enonhf += 0. ;
       }
-    } // end of loop over elements
+    }
 
     if (id == reco::PFCandidate::egamma_HF ){
       pfcandHFEM_n++ ;
-      FillHist1D("blocksHFEM_n", nblocks, 1);
       FillHist1D("pfcandHFEM_pt", pt, 1. );
       FillHist1D("pfcandHFEM_E",  E,  1. );
       FillHist1D("pfcandHFEM_nelements", nele, 1. );
       FillHist1D("pfcandHFEM_nhits", PFrechitsHF.size(), 1. );
     } else if (id == reco::PFCandidate::h_HF ) {
       pfcandHFHAD_n++ ;
-      FillHist1D("blocksHFHAD_n", nblocks, 1);
       FillHist1D("pfcandHFHAD_pt", pt, 1. );
       FillHist1D("pfcandHFHAD_E",  E,  1. );
       FillHist1D("pfcandHFHAD_nelements", nele, 1. );
       FillHist1D("pfcandHFHAD_nhits", PFrechitsHF.size(), 1. );
-    } else if (id == reco::PFCandidate::h) {
+    } else {
       pfcandHFCH_n++ ;
-      FillHist1D("blocksHFCH_n", nblocks, 1);
       FillHist1D("pfcandHFCH_pt", pt, 1. );
       FillHist1D("pfcandHFCH_E",  E,  1. );
-    } else {
-      cout << "Special Case: Candidate has HFCluster and is of the id " << id <<endl;
     }
 
     if(matchCandP)  matchPFcandP.push_back(pfcand);
@@ -1318,7 +1446,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     LogPrint("PFTrackHFAnalyzer") << boost::format(" track_negeta_n %i)") % track_negeta_n ;
   }
 
-  FillHist2D("PFcand_vs_PFtrack", pftrackHF_n, pfcandHFCH_n, 1.);
 
   sort(matchPFcandP.begin(),matchPFcandP.end(), mysort);
   sort(matchPFcandN.begin(),matchPFcandN.end(), mysort);
@@ -1370,8 +1497,13 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   if (nP > 0) {
     double r = matchPFcandP[0].energy()/genP_E ;
     FillHist1D("Eratio_PFcand1toGen", r, 1.);
-    if (nP > 1) FillHist1D("Eratio_PFcand2toGen", (matchPFcandP[0].energy()+matchPFcandP[1].energy())/genP_E, 1. );
-    if (nP > 2) FillHist1D("Eratio_PFcand3toGen", (matchPFcandP[0].energy()+matchPFcandP[1].energy()+matchPFcandP[2].energy())/genP_E, 1. );
+    if(matchPFcandP[0].particleId() == reco::PFCandidate::egamma_HF) FillHist1D("Eratio_PFcandEM1toGen", r, 1.);
+    const reco::PFCandidate::ElementsInBlocks& theElements = matchPFcandP[0].elementsInBlocks();
+    const reco::PFBlockRef blockRef = theElements[0].first;
+    const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
+    if(matchPFcandP[0].particleId() == reco::PFCandidate::h_HF && elements.size() == 1) FillHist1D("Eratio_PFcandHAD1toGen",   r, 1.); 
+    if(matchPFcandP[0].particleId() == reco::PFCandidate::h_HF && elements.size() == 2) FillHist1D("Eratio_PFcandEMHAD1toGen", r, 1.);
+
     if(r< 0.05) cout << " Scan this event # " << nev <<  endl ;
     
   } 
@@ -1379,9 +1511,19 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   if (nN > 0) {
     double r = matchPFcandN[0].energy()/genN_E ;
     FillHist1D("Eratio_PFcand1toGen", r, 1.);
-    if (nN > 1) FillHist1D("Eratio_PFcand2toGen", (matchPFcandN[0].energy()+matchPFcandN[1].energy())/genN_E, 1. );
-    if (nN > 2) FillHist1D("Eratio_PFcand3toGen", (matchPFcandN[0].energy()+matchPFcandN[1].energy()+matchPFcandN[2].energy())/genN_E, 1. );
+    if(matchPFcandN[0].particleId() == reco::PFCandidate::egamma_HF) FillHist1D("Eratio_PFcandEM1toGen", r, 1. );
+    const reco::PFCandidate::ElementsInBlocks& theElements = matchPFcandN[0].elementsInBlocks();
+    const reco::PFBlockRef blockRef = theElements[0].first;
+    const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
+    if(matchPFcandN[0].particleId() == reco::PFCandidate::h_HF && elements.size() == 1) FillHist1D("Eratio_PFcandHAD1toGen",  r, 1.);
+    if(matchPFcandN[0].particleId() == reco::PFCandidate::h_HF && elements.size() == 2) FillHist1D("Eratio_PFcandEMHAD1toGen",r, 1.); 
   }
+
+  if (nP > 1) FillHist1D("Eratio_PFcand2toGen", (matchPFcandP[0].energy()+matchPFcandP[1].energy())/genP_E, 1. );
+  if (nN > 1) FillHist1D("Eratio_PFcand2toGen", (matchPFcandN[0].energy()+matchPFcandN[1].energy())/genN_E, 1. );
+
+  if (nP > 2) FillHist1D("Eratio_PFcand3toGen", (matchPFcandP[0].energy()+matchPFcandP[1].energy()+matchPFcandP[2].energy())/genP_E, 1. );
+  if (nN > 2) FillHist1D("Eratio_PFcand3toGen", (matchPFcandN[0].energy()+matchPFcandN[1].energy()+matchPFcandN[2].energy())/genN_E, 1. );
 
   if (debug_ && scan){
     LogPrint("PFTrackHFAnalyzer") << "  pfcandsHF:    "  << pfcandHFEM_n+pfcandHFHAD_n+pfcandHFCH_n;
@@ -1393,104 +1535,8 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   FillHist1D("pfcandHFEM_n",  pfcandHFEM_n, 1.);
   FillHist1D("pfcandHFHAD_n", pfcandHFHAD_n, 1.);
   FillHist1D("pfcandHFCH_n",  pfcandHFCH_n, 1.);
-
- 
-  // second loop over pfcandidates: Offset part 
-  float eFlavor[numFlavors][ETA_BINS] = {};
-  for(const auto& pfcand : *(pfcands.product()) ){
-    // remove single pions: keep only PU-originated pfcandidates ...
-    if( pfcand.eta() > 0. ){
-      double deltaphiP = fabs(pfcand.phi() - genP_phi) ;
-      if( deltaphiP > M_PI ) deltaphiP = 2. * M_PI  - deltaphiP ;
-      if( deltaphiP < M_PI/2. )  continue ; 
-    }
-    if( pfcand.eta() < 0. ){
-      double deltaphiN = fabs(pfcand.phi() - genN_phi) ;
-      if( deltaphiN > M_PI ) deltaphiN = 2. * M_PI  - deltaphiN ;
-      if( deltaphiN < M_PI/2. )  continue ;
-    }
-
-    int etaIndex = getEtaIndex(pfcand.eta());
-    Flavor flavor = getFlavor(pfcand.particleId());
-    if (etaIndex == -1 || flavor == X) continue;
-
-    bool attached1 = false;
-    reco::TrackRef trackref = pfcand.trackRef(); 
-    if (flavor == chm && !trackref.isNull() ) {
-      for(const auto& pv : *(vertices.product()) ){
-        if ( !pv.isFake() && pv.ndof() >= 4.0 && fabs(pv.z()) <= 24.0 && fabs(pv.position().rho())<=2.0 ) {
-          reco::Vertex::trackRef_iterator i_vtxTrk, endvtxTrk = pv.tracks_end();
-          for(i_vtxTrk = pv.tracks_begin(); i_vtxTrk != endvtxTrk && !attached1; ++i_vtxTrk) {
-            reco::TrackRef vtxTrk(i_vtxTrk->castTo<reco::TrackRef>());
-            if (vtxTrk == trackref) attached1 = true;
-          }
-        } 
-      }
-      if (!attached1) flavor = chu; //unmatched charged hadron
-    }
-
-    eFlavor[flavor][etaIndex] += pfcand.energy();
-  }
-
-
-//------------ Tracks ------------//
-
-/*
-  for(const auto& track : *(tracks.product()) ){
-
-    if ( !track.quality(reco::Track::tight) ) continue;
-    bool matched = false;
-//    reco::TrackRef vtxTrk(i_trk->castTo<reco::TrackRef>());
-
-    for(const auto& pfcand : *(pfcands.product()) ){ 
-      reco::TrackRef trackref = pfcand.trackRef();
-
-      if ( track == pfcand.trackRef().get() )   
-      matched = true;      
-    }
-    if (matched) continue;
-
-    int etaIndex = getEtaIndex( track.eta() );
-    if (etaIndex == -1) continue;
-
-    float e = track.p();
-    eFlavor[untrk][etaIndex] += e;
-  }
 */
-
-  vector<reco::Track>::const_iterator i_trk, endtrk = tracks->end();
-  for (i_trk = tracks->begin(); i_trk != endtrk; ++i_trk) {
-
-    if ( !i_trk->quality(reco::Track::tight) ) continue;
-    bool matched = false;
-
-    vector<reco::PFCandidate>::const_iterator i_pf, endpf = pfcands->end();
-    for (i_pf = pfcands->begin();  i_pf != endpf && !matched; ++i_pf) {
-      if ( &(*i_trk) == i_pf->trackRef().get() ) matched = true;      
-    }
-    if (matched) continue;
-
-    int etaIndex = getEtaIndex( i_trk->eta() );
-    if (etaIndex == -1) continue;
-
-    float e = i_trk->p();
-    eFlavor[untrk][etaIndex] += e;
-  }
-
-
-
-  int intmu = mu / 10 ;
-  for (int ieta = 0; ieta != ETA_BINS; ++ieta){
-    double eta = 0.5*(etabins[ieta] + etabins[ieta+1]);
-    for (int ifl = 0; ifl != numFlavors; ++ifl){
-      double area = M_PI * (etabins[ieta+1] - etabins[ieta]);  // only half pi
-      hname = Form("edensity_eta_nPU%i_", intmu) + ids[ifl];
-      FillProfile(hname, eta, eFlavor[ifl][ieta]/area, 1.); 
-      hname = Form("ptdensity_eta_nPU%i_", intmu) + ids[ifl];
-      FillProfile(hname, eta, eFlavor[ifl][ieta]/area/cosh(eta), 1.); 
-      // cout << " ieta, efl, e " << ieta << "  " << ifl << "  " << eFlavor[ifl][ieta] << endl ;
-    }
-  }
+ 
 
   LogPrint("PFTrackHFAnalyzer") << "\n\n"  ; 
 
@@ -1509,6 +1555,9 @@ PFTrackHFAnalyzer::endJob()
 {
   if (debug_) {
     // LogPrint("PFTrackHFAnalyzer") << "\n";
+//    LogPrint("PFTrackHFAnalyzer") << boost::format(" Lowest energy cluster: HFEM, HFHAD  %i") % pfclusHFEM_Emin % pfclusHFHAD_Emin  ;
+      cout << "lowest energy pfrechit: HFEM, HFHAD  " << pfrechitHFEM_Emin << "  " <<  pfrechitHFHAD_Emin  << endl;
+      cout << "lowest energy cluster : HFEM, HFHAD  " << pfclusHFEM_Emin   << "  " <<  pfclusHFHAD_Emin    << endl;
 
   }
 
@@ -1590,6 +1639,22 @@ int PFTrackHFAnalyzer::idphi(int iphiA, int iphiB)
   if(d < -18) d = 36 + d ;
   return d ; 
 }
+
+
+bool PFTrackHFAnalyzer::IsIn4(int ietaA, int ietaB, int iphiA, int iphiB)
+{   
+  if ( abs(ietaA-ietaB) == 1 && iphiA == iphiB )         return true ;
+  if ( ietaA == ietaB && abs(idphi(iphiA, iphiB)) == 1 ) return true ;
+  return false ;
+}       
+
+bool PFTrackHFAnalyzer::IsInX(int ietaA, int ietaB, int iphiA, int iphiB)
+{
+  if ( abs(ietaA-ietaB) == 1 && abs(idphi(iphiA, iphiB)) == 1 )  return true ;
+  return false ;
+}
+
+
 
 int PFTrackHFAnalyzer::getEtaIndex(float eta){
 
