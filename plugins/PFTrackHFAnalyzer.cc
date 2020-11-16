@@ -326,9 +326,9 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   // ...
   
   hname = "pfclusHFEM_nhits";   
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 12 , -1.5 , 10.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 22 , -1.5 , 20.5 );
   hname = "pfclusHFHAD_nhits";  
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 12 , -1.5 , 10.5 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 22 , -1.5 , 20.5 );
 
   hname = "pfclusHFEM_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 999.5 );
@@ -524,12 +524,13 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
 
 
 // ... offset histos ...
+  TFileDirectory subDir_offset = fs->mkdir( "OffsetPlots" );
   for (int i_id=0; i_id<numFlavors; i_id++){
     for (int i_nPU=0; i_nPU<25; i_nPU++){
       hname = Form("edensity_eta_nPU%i_",i_nPU) + ids[i_id];
-      m_Profiles[hname] = fs->make<TProfile>(hname, hname, ETA_BINS, etabins);
+      m_Profiles[hname] = subDir_offset.make<TProfile>(hname, hname, ETA_BINS, etabins);
       hname = Form("ptdensity_eta_nPU%i_",i_nPU) + ids[i_id];
-      m_Profiles[hname] = fs->make<TProfile>(hname, hname, ETA_BINS, etabins);
+      m_Profiles[hname] = subDir_offset.make<TProfile>(hname, hname, ETA_BINS, etabins);
     }
   }
 }
@@ -1016,6 +1017,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          pfclusHFN_pttot = 0., pfclusHFN_pttot5 = 0., pfclusHFN_pttot9 = 0.;
 
   for(const auto& pfclus : *(pfclustersHF.product()) ){
+    bool adjacentClus = false;
     double eta = pfclus.eta() ;
     double phi = pfclus.phi() ;
     double pt  = pfclus.pt() ;
@@ -1025,7 +1027,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     const std::vector<reco::PFRecHitFraction> &fracs = pfclus.recHitFractions();   
     //const std::vector<std::pair<DetId, float>> &hfracs = pfclus.hitsAndFractions();
     unsigned nhits = fracs.size();
-    if((nhits>1) && !(idep==1)) cout <<"$$$$$$$$$$$$$$$$$$$$$$$$ EVENT "<< nev <<" HAS CLUSTERING IN HFHAD $$$$$$$$$$$$$$$$$$$$$$$$"<<endl;
 
     if (debug_ && scan)
     LogPrint("PFTrackHFAnalyzer") << boost::format("pfclus (pt,E,eta,phi,layer,depth,nhits): (%6.2f, %6.2f, %6.2f, %6.2f, %i, %i, %i)")
@@ -1063,7 +1064,6 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       if (debug_ && scan)
       LogPrint("PFTrackHFAnalyzer") << boost::format(" pfrechit (ieta, iphi, depth, E, frac): (%3d, %3d, %2d, %6.2f, %6.2f)")
       % HcalDetId(pfRecHits->detId()).ieta() % HcalDetId(pfRecHits->detId()).iphi()  % HcalDetId(pfRecHits->detId()).depth() % rawenergy % frac ;
-
 
       if(idep == 1){
         if( ieta == genP_ieta1 && iphi == genP_iphi1 ) matchP = true ;
@@ -1153,6 +1153,13 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       }
       if(E < pfclusHFHAD_Emin ) pfclusHFHAD_Emin = E ;
     } 
+    for(const auto& pfclus2 : *(pfclustersHF.product()) ){ //second loop over clusters for finding adjacent clusters
+      double eta2 = pfclus2.eta() ;
+      double phi2 = pfclus2.phi() ;
+      int idep2   = fabs(pfclus2.depth() - 1.) < 0.001 ? 1 : 2 ;   
+      if ((idep2 == idep) && (IsIn4(eta, eta2, phi, phi2) || IsInX(eta, eta2, phi, phi2)) && (matchP || match4P || match8P || matchN || match4N || match8N)) adjacentClus = true;
+    }
+    if (adjacentClus) LogPrint("PFTrackHFAnalyzer") << boost::format("$$$$ Two Adjacent clusters near gen particle direction in depth %i. Scan this event # %i $$$$") % idep % nev;
   } // end of loop over pfclusHF
 
   if (debug_ && scan){
@@ -1229,7 +1236,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   FillHist1D("pfclusEmax_frac",  (pfclusHFEMN_Emax+pfclusHFHADN_Emax)/genN_E, 1.);
 
 
-/*
+
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pfcands: =========== " << pfcands->size();
   int pfcandHFEM_n = 0, pfcandHFHAD_n = 0, pfcandHFCH_n = 0 ;
@@ -1535,8 +1542,77 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   FillHist1D("pfcandHFEM_n",  pfcandHFEM_n, 1.);
   FillHist1D("pfcandHFHAD_n", pfcandHFHAD_n, 1.);
   FillHist1D("pfcandHFCH_n",  pfcandHFCH_n, 1.);
-*/
- 
+
+  // second loop over pfcandidates: Offset part 
+  float eFlavor[numFlavors][ETA_BINS] = {};
+  for(const auto& pfcand : *(pfcands.product()) ){
+    // remove single pions: keep only PU-originated pfcandidates ...
+    if( pfcand.eta() > 0. ){
+      double deltaphiP = fabs(pfcand.phi() - genP_phi) ;
+      if( deltaphiP > M_PI ) deltaphiP = 2. * M_PI  - deltaphiP ;
+      if( deltaphiP < M_PI/2. )  continue ; 
+    }
+    if( pfcand.eta() < 0. ){
+      double deltaphiN = fabs(pfcand.phi() - genN_phi) ;
+      if( deltaphiN > M_PI ) deltaphiN = 2. * M_PI  - deltaphiN ;
+      if( deltaphiN < M_PI/2. )  continue ;
+    }
+
+    int etaIndex = getEtaIndex(pfcand.eta());
+    Flavor flavor = getFlavor(pfcand.particleId());
+    if (etaIndex == -1 || flavor == X) continue;
+
+    bool attached1 = false;
+    reco::TrackRef trackref = pfcand.trackRef(); 
+    if (flavor == chm && !trackref.isNull() ) {
+      for(const auto& pv : *(vertices.product()) ){
+        if ( !pv.isFake() && pv.ndof() >= 4.0 && fabs(pv.z()) <= 24.0 && fabs(pv.position().rho())<=2.0 ) {
+          reco::Vertex::trackRef_iterator i_vtxTrk, endvtxTrk = pv.tracks_end();
+          for(i_vtxTrk = pv.tracks_begin(); i_vtxTrk != endvtxTrk && !attached1; ++i_vtxTrk) {
+            reco::TrackRef vtxTrk(i_vtxTrk->castTo<reco::TrackRef>());
+            if (vtxTrk == trackref) attached1 = true;
+          }
+        } 
+      }
+      if (!attached1) flavor = chu; //unmatched charged hadron
+    }
+
+    eFlavor[flavor][etaIndex] += pfcand.energy();
+  }
+
+  vector<reco::Track>::const_iterator i_trk, endtrk = tracks->end();
+  for (i_trk = tracks->begin(); i_trk != endtrk; ++i_trk) {
+
+    if ( !i_trk->quality(reco::Track::tight) ) continue;
+    bool matched = false;
+
+    vector<reco::PFCandidate>::const_iterator i_pf, endpf = pfcands->end();
+    for (i_pf = pfcands->begin();  i_pf != endpf && !matched; ++i_pf) {
+      if ( &(*i_trk) == i_pf->trackRef().get() ) matched = true;      
+    }
+    if (matched) continue;
+
+    int etaIndex = getEtaIndex( i_trk->eta() );
+    if (etaIndex == -1) continue;
+
+    float e = i_trk->p();
+    eFlavor[untrk][etaIndex] += e;
+  }
+
+
+
+  int intmu = mu / 10 ;
+  for (int ieta = 0; ieta != ETA_BINS; ++ieta){
+    double eta = 0.5*(etabins[ieta] + etabins[ieta+1]);
+    for (int ifl = 0; ifl != numFlavors; ++ifl){
+      double area = M_PI * (etabins[ieta+1] - etabins[ieta]);  // only half pi
+      hname = Form("edensity_eta_nPU%i_", intmu) + ids[ifl];
+      FillProfile(hname, eta, eFlavor[ifl][ieta]/area, 1.); 
+      hname = Form("ptdensity_eta_nPU%i_", intmu) + ids[ifl];
+      FillProfile(hname, eta, eFlavor[ifl][ieta]/area/cosh(eta), 1.); 
+      // cout << " ieta, efl, e " << ieta << "  " << ifl << "  " << eFlavor[ifl][ieta] << endl ;
+    }
+  }
 
   LogPrint("PFTrackHFAnalyzer") << "\n\n"  ; 
 
