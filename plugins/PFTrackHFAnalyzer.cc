@@ -104,15 +104,12 @@ float etabins[ETA_BINS+1] =
    1.566, 1.653, 1.74, 1.83, 1.93, 2.043, 2.172, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 3.314, 3.489, 3.664, 3.839, 4.013,
    4.191, 4.363, 4.538, 4.716, 4.889, 5.191};
 
-
-
 class PFTrackHFAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   public:
     explicit PFTrackHFAnalyzer(const edm::ParameterSet&);
     ~PFTrackHFAnalyzer();
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
 
   private:
     virtual void beginJob() override;
@@ -367,14 +364,14 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   m_Histos2D[hname] = fs->make<TH2F>(hname, hname , 22 , -1.5 , 20.5, 22 , -1.5 , 20.5 );
 
   hname = "match_ptfrac";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100, 0. , 2.0 );   
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500, 0. , 100.0 );   
   hname = "match_ptfrac5";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100, 0. , 2.0 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500, 0. , 100.0 );
   hname = "match_ptfrac9";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100, 0. , 2.0 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500, 0. , 100.0 );
 
   hname = "pfclusEmax_frac";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100, 0. , 2.0 );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500, 0. , 100.0 );
 
   hname = "pfcandHFEM_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 499.5 ); 
@@ -452,28 +449,28 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 16 , -0.5, 15.5 );
 
   hname = "Eratio_PFcand1toGen";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "Eratio_PFcand2toGen";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "Eratio_PFcand3toGen";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
 
   hname = "Eratio_PFcandAlltoGen";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "Eratio_PFcandNonTtoGen";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
 
   hname = "Eratio_PFcandEM1toGen";  
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "Eratio_PFcandHAD1toGen";  
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "Eratio_PFcandEMHAD1toGen";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
 
   hname = "PovGenE_brem";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "PovGenE_nobrem";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 2. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
 
   hname = "EovP";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 100 , 0. , 5. );
