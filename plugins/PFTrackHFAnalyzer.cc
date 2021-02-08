@@ -377,6 +377,11 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   hname = "pfclusEmax_frac";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500, 0. , 100.0 );
 
+  hname = "pfclusHFEM_ptall,";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000, 0. , 1000.0 );
+  hname = "pfclusHFHAD_ptall,";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000, 0. , 1000.0 );
+
   hname = "pfcandHFEM_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 499.5 ); 
   hname = "pfcandHFHAD_n";
@@ -391,14 +396,20 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "pfcandHFCH_pt";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
-  hname = "pfcandNoHFCH_pt";
+  hname = "pfcandHFEM_ptall";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000 , 0. , 1000. );
+  hname = "pfcandHFHAD_ptall";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000 , 0. , 1000. );
+  hname = "pfcandHFCH_ptall";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000 , 0. , 1000. );
+  /*hname = "pfcandNoHFCH_pt";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "pfcandNoHFCH_eta";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 120 , -6. , 6. );
   hname = "pfcandNoHFCHHF_pt";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 100. );
   hname = "pfcandNoHFCHHF_eta";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 120 , -6. , 6. );
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 120 , -6. , 6. );*/
 
 
   hname = "pfcandHFEM_E";
@@ -1017,6 +1028,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   double pfclusHFP_pttot = 0., pfclusHFP_pttot5 = 0., pfclusHFP_pttot9 = 0., 
          pfclusHFN_pttot = 0., pfclusHFN_pttot5 = 0., pfclusHFN_pttot9 = 0.;
 
+  double pfclusHFEM_ptall = 0., pfclusHFHAD_ptall = 0.;
   for(const auto& pfclus : *(pfclustersHF.product()) ){
     bool adjacentClus = false;
     double eta = pfclus.eta() ;
@@ -1127,6 +1139,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     if(idep == 1){
       pfclusHFEM_n++  ;
+      pfclusHFEM_ptall += pt ;
       if( eta > 0 )  pfclusHFEMP_n++  ;
       FillHist1D("pfclusHFEM_nhits",  nhits, 1.);
       FillHist1D("pfclusHFEM_E", E, 1.);
@@ -1141,6 +1154,7 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       if(E < pfclusHFEM_Emin ) pfclusHFEM_Emin = E ;
     } else {
       pfclusHFHAD_n++ ;
+      pfclusHFHAD_ptall += pt;
       if( eta > 0 )  pfclusHFHADP_n++  ;
       FillHist1D("pfclusHFHAD_nhits", nhits, 1.);
       FillHist1D("pfclusHFHAD_E", E, 1.);
@@ -1236,13 +1250,15 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   FillHist1D("pfclusEmax_frac",  (pfclusHFEMP_Emax+pfclusHFHADP_Emax)/genP_E, 1.);
   FillHist1D("pfclusEmax_frac",  (pfclusHFEMN_Emax+pfclusHFHADN_Emax)/genN_E, 1.);
 
-
+  FillHist1D("pfclusHFEM_ptall", pfclusHFEM_ptall, 1.);
+  FillHist1D("pfclusHFHAD_ptall", pfclusHFHAD_ptall, 1.);
 
   if (debug_ && scan)
   LogPrint("PFTrackHFAnalyzer") << "\n =========== pfcands: =========== " << pfcands->size();
   int pfcandHFEM_n = 0, pfcandHFHAD_n = 0, pfcandHFCH_n = 0 ;
   vector<reco::PFCandidate> matchPFcandP, matchPFcandN ;
   int track_poseta_n = 0, track_negeta_n = 0 ;
+  double pfcandHFEM_ptall = 0., pfcandHFHAD_ptall = 0., pfcandHFCH_ptall = 0.;
 
   for(const auto& pfcand : *(pfcands.product()) ){
 //  if (pfcand.trackRef().isNonnull())  cout << "All PFCands: pfcand.trackRef().get() "  << pfcand.trackRef().get()  << endl ;
@@ -1405,18 +1421,21 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     if (id == reco::PFCandidate::egamma_HF ){
       pfcandHFEM_n++ ;
+      pfcandHFEM_ptall += pt ;
       FillHist1D("pfcandHFEM_pt", pt, 1. );
       FillHist1D("pfcandHFEM_E",  E,  1. );
       FillHist1D("pfcandHFEM_nelements", nele, 1. );
       FillHist1D("pfcandHFEM_nhits", PFrechitsHF.size(), 1. );
     } else if (id == reco::PFCandidate::h_HF ) {
       pfcandHFHAD_n++ ;
+      pfcandHFHAD_ptall += pt ;
       FillHist1D("pfcandHFHAD_pt", pt, 1. );
       FillHist1D("pfcandHFHAD_E",  E,  1. );
       FillHist1D("pfcandHFHAD_nelements", nele, 1. );
       FillHist1D("pfcandHFHAD_nhits", PFrechitsHF.size(), 1. );
     } else {
       pfcandHFCH_n++ ;
+      pfcandHFCH_ptall += pt ;
       FillHist1D("pfcandHFCH_pt", pt, 1. );
       FillHist1D("pfcandHFCH_E",  E,  1. );
     }
@@ -1448,6 +1467,9 @@ PFTrackHFAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       }
     }
   } // end of loop overy PFcandidates ...
+  FillHist1D("pfcandHFEM_ptall", pfcandHFEM_ptall, 1.);
+  FillHist1D("pfcandHFHAD_ptall", pfcandHFHAD_ptall, 1.);
+  FillHist1D("pfcandHFCH_ptall", pfcandHFCH_ptall, 1.);
 
   if (debug_ && scan){
     LogPrint("PFTrackHFAnalyzer") << boost::format(" track_poseta_n %i)") % track_poseta_n ;
