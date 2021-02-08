@@ -345,6 +345,11 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 200. );
   hname = "pfclusHFHAD_pt";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 200 , 0. , 200. );
+    
+  hname = "pfclusHFEM_ptall";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000, 0. , 1000.0 );
+  hname = "pfclusHFHAD_ptall";
+  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000, 0. , 1000.0 );
 
   hname = "pfclusHFEM_Emax";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 205 , -5. , 200. );
@@ -376,11 +381,6 @@ PFTrackHFAnalyzer::PFTrackHFAnalyzer(const edm::ParameterSet& iConfig)
 
   hname = "pfclusEmax_frac";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500, 0. , 100.0 );
-
-  hname = "pfclusHFEM_ptall,";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000, 0. , 1000.0 );
-  hname = "pfclusHFHAD_ptall,";
-  m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 2000, 0. , 1000.0 );
 
   hname = "pfcandHFEM_n";
   m_Histos1D[hname] = fs->make<TH1F>(hname, hname , 500 , -0.5 , 499.5 ); 
