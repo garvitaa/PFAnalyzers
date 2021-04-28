@@ -43,11 +43,11 @@ ROOT.AutoLibraryLoader.enable()
 ROOT.gROOT.SetStyle('Plain') # white background
 H_ParticleEta_gen = ROOT.TH1F ("ParticleEta_gen","ParticleEta_gen",int(len(etabins)-1),etabins)
 H_ParticleEta_matched = ROOT.TH1F ("ParticleEta","ParticleEta",int(len(etabins)-1),etabins)
-#H_ParticleEta_fake = ROOT.TH1F ("ParticleEta_Fake","ParticleEta_Fake",int(len(etabins)-1),etabins)
+H_ParticleEta_fake = ROOT.TH1F ("ParticleEta_Fake","ParticleEta_Fake",int(len(etabins)-1),etabins)
 
 H_ParticlePt_gen = ROOT.TH1F ("ParticlePt_gen","ParticlePt_gen",int(len(ptbins)-1),ptbins)
 H_ParticlePt_matched = ROOT.TH1F ("ParticlePt_matched","ParticlePt_matched",int(len(ptbins)-1),ptbins)
-#H_ParticlePt_fake = ROOT.TH1F ("ParticlePt_fake","ParticlePt_fake",int(len(ptbins)-1),ptbins)
+H_ParticlePt_fake = ROOT.TH1F ("ParticlePt_fake","ParticlePt_fake",int(len(ptbins)-1),ptbins)
 
 H_recoJet_eta = ROOT.TH1F ("recoJet_eta","recoJet_eta",int(len(etabins)-1),etabins)
 #H_recoJet_eta_matched = ROOT.TH1F ("recoJet_eta_matched","recoJet_eta_matched",int(len(etabins)-1),etabins)
@@ -69,14 +69,32 @@ H_pfcand_pt = ROOT.TH1F ("pfcand_pt","pfcand_pt",int(len(ptbins)-1),ptbins)
 H_pfcand_pt_matched = ROOT.TH1F ("pfcand_pt_matched","pfcand_pt_matched",int(len(ptbins)-1),ptbins)
 H_pfcand_pt_fake = ROOT.TH1F ("pfcand_pt_fake","pfcand_pt_fake",int(len(ptbins)-1),ptbins)
 
+H_deltaR = ROOT.TH1F ("deltaR", "deltaR", 50, 0., 1.)
+
 H_response_pt=[]
+H_response_charge_pt = []
+H_response_neutral_pt = []
+H_ParticlePt_matched_eta=[]
+H_ParticlePt_eta=[]
 
 for i in etabins:
   sub=[]
+  sub_c=[]
+  sub_n=[]
+  hname = "particle_pT_eta" + (str(i).replace('.', 'p'))
+  H_ParticlePt_eta.append(ROOT.TH1F(hname, hname, int(len(ptbins)-1),ptbins))
+  hname = "particle_matched_pT_eta" + (str(i).replace('.', 'p'))
+  H_ParticlePt_matched_eta.append(ROOT.TH1F(hname, hname, int(len(ptbins)-1),ptbins))
   for j in ptbins:
-    hname = "response_pt"+(str(j).replace('.', 'p'))+"_eta"+(str(i).replace('.', 'p'))
+    hname = "response_pt" + (str(j).replace('.', 'p')) + "_eta" + (str(i).replace('.', 'p'))
     sub.append(ROOT.TH1F(hname, hname, 52, 0, 2))
+    hname = "response_charge_pt" + (str(j).replace('.', 'p')) + "_eta" + (str(i).replace('.', 'p'))
+    sub_c.append(ROOT.TH1F(hname, hname, 52, 0, 2))
+    hname = "response_neutral_pt" + (str(j).replace('.', 'p')) + "_eta" + (str(i).replace('.', 'p'))
+    sub_n.append(ROOT.TH1F(hname, hname, 52, 0, 2))
   H_response_pt.append(sub)
+  H_response_charge_pt.append(sub_c)
+  H_response_neutral_pt.append(sub_n)
 
 # load FWlite python libraries
 from DataFormats.FWLite import Handle, Events
@@ -93,13 +111,13 @@ verticesScore = Handle("edm::ValueMap<float>")
 
 # test
 # pfTICL
-listFiles=[
-   'file:8c20b216-dd17-43e2-878e-d6ceb8c735f5.root'
-]
-# ref
 # listFiles=[
-#     'file:/cms/data/store/user/hatake/RelValZEE_14/pfvalidation/200908_012521/0000/step3_inMINIAODSIM_1.root'
+#    'file:8c20b216-dd17-43e2-878e-d6ceb8c735f5.root'
 # ]
+# ref
+listFiles=[
+    'file:3161edd0-2375-4aea-ac8e-bc6c416ac9c4.root'
+]
 events = Events(listFiles)
 
 for iev,event in enumerate(events):
@@ -115,21 +133,40 @@ for iev,event in enumerate(events):
     #if pgenp.pt() < 5 : continue
     print "pgenpar: run %6d, event %10d, pt %4.1f, eta %5.2f, phi %5.2f, pdgId %d." % (
       event.eventAuxiliary().run(), event.eventAuxiliary().event(), pgenp.pt(), pgenp.eta(), pgenp.phi(), pgenp.pdgId())
+    i_eta = int(np.digitize([abs(pgenp.eta())],etabins))-1
+    i_pt = int(np.digitize([pgenp.pt()],ptbins))-1
     H_ParticlePt_gen.Fill(pgenp.pt())
     H_ParticleEta_gen.Fill(abs(pgenp.eta()))
+    if (i_eta <len(etabins)): H_ParticlePt_eta[i_eta].Fill(pgenp.pt())
 
-    #match = False # matching gen particles to pfcands
+    dr_min = 99999.0
+    match = False # matching gen particles to pfcands
     for k,j in enumerate(pfcands.product()):
       if j.pt() < 0:continue
-      if (int(abs(pgenp.pdgId())) == 211) & (int(abs(j.pdgId())) == 211) & (deltaR2(pgenp,j)<0.01):
-        print "matched: run %6d, event %10d, pt %5.1f eta %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(), event.eventAuxiliary().event(),j.pt(), j.eta(), j.pdgId(), j.rawCaloFraction(), j.rawHcalFraction())
-        H_ParticlePt_matched.Fill(pgenp.pt())
-        H_ParticleEta_matched.Fill(pgenp.eta())
-        i_eta = int(np.digitize([abs(pgenp.eta())],etabins))-1
-        i_pt = int(np.digitize([pgenp.pt()],ptbins))-1
-        print "    RecopT: %5.3f GenpT: %5.3f Response: %5.3f i_pt: %3i i_eta: %3i" % (j.pt(), pgenp.pt(), (j.pt() / pgenp.pt()), i_pt, i_eta)
-        if (i_eta <len(etabins)) & (i_pt < len(ptbins)):
-          H_response_pt[i_eta][i_pt].Fill(j.pt() / pgenp.pt())
+      H_deltaR.Fill(math.sqrt(deltaR2(pgenp,j)))
+      if (abs(pgenp.pdgId())==211):
+        if (deltaR2(pgenp,j) < dr_min):
+          dr_min = deltaR2(pgenp,j)
+          print "deltaR: ", dr_min
+          if (dr_min<0.01):
+            match=True
+            recop = j
+
+    if match:
+      print "matched: run %6d, event %10d, pt %5.1f eta %5.2f phi %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(), event.eventAuxiliary().event(),recop.pt(), recop.eta(), recop.phi(), recop.pdgId(), recop.rawCaloFraction(), recop.rawHcalFraction())
+      H_ParticlePt_matched.Fill(pgenp.pt())
+      H_ParticleEta_matched.Fill(pgenp.eta())
+      print "    RecopT: %5.3f GenpT: %5.3f Response: %5.3f i_pt: %3i i_eta: %3i" % (recop.pt(), pgenp.pt(), (recop.pt() / pgenp.pt()), i_pt, i_eta)
+      if (i_eta <len(etabins)) & (i_pt < len(ptbins)):
+        H_ParticlePt_matched_eta[i_eta].Fill(pgenp.pt())
+        H_response_pt[i_eta][i_pt].Fill(recop.pt() / pgenp.pt())
+        if (abs(recop.charge()) > 0):
+          H_response_charge_pt[i_eta][i_pt].Fill(recop.pt() / pgenp.pt())
+        else:
+          H_response_neutral_pt[i_eta][i_pt].Fill(recop.pt() / pgenp.pt())
+    else:
+      H_ParticlePt_fake.Fill(pgenp.pt())
+      H_ParticleEta_fake.Fill(pgenp.eta())
 
   # Jets (standard AK4)
   for i,j in enumerate(jets.product()):
@@ -140,25 +177,25 @@ for iev,event in enumerate(events):
     H_recoJetRaw_pt.Fill(j.pt()*j.jecFactor('Uncorrected'))
     H_recoJet_eta.Fill(j.eta())
 
-    '''match = False
-    for k,pgenp in enumerate(pgenpars.product()):
-      if abs(pgenp.pdgId())==211:
-        if deltaR2(pgenp,j)<0.01:
-          match=True
+    # match = False
+    # for k,pgenp in enumerate(pgenpars.product()):
+    #   if abs(pgenp.pdgId())==211:
+    #     if deltaR2(pgenp,j)<0.01:
+    #       match=True
 
-    if match:
-      H_recoJet_pt_matched.Fill(j.pt())
-      H_recoJetRaw_pt_matched.Fill(j.pt()*j.jecFactor('Uncorrected'))
-      H_recoJet_eta_matched.Fill(j.eta())
-    else:
-      H_recoJet_pt_fake.Fill(j.pt())
-      H_recoJetRaw_pt_fake.Fill(j.pt()*j.jecFactor('Uncorrected'))
-      H_recoJet_eta_fake.Fill(j.eta())'''
+    # if match:
+    #   H_recoJet_pt_matched.Fill(j.pt())
+    #   H_recoJetRaw_pt_matched.Fill(j.pt()*j.jecFactor('Uncorrected'))
+    #   H_recoJet_eta_matched.Fill(j.eta())
+    # else:
+    #   H_recoJet_pt_fake.Fill(j.pt())
+    #   H_recoJetRaw_pt_fake.Fill(j.pt()*j.jecFactor('Uncorrected'))
+    #   H_recoJet_eta_fake.Fill(j.eta())
 
   # pfcands
   for i,j in enumerate(pfcands.product()):
     if j.pt() < 0: continue
-    print "pfcands: run %6d, event %10d, pt %5.1f eta %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(), event.eventAuxiliary().event(), j.pt(), j.eta(), j.pdgId(), j.rawCaloFraction(), j.rawHcalFraction())
+    print "pfcands: run %6d, event %10d, pt %5.1f eta %5.2f phi %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(), event.eventAuxiliary().event(), j.pt(), j.eta(), j.phi(), j.pdgId(), j.rawCaloFraction(), j.rawHcalFraction())
     
     H_pfcand_pt.Fill(j.pt())
     H_pfcand_eta.Fill(j.eta())
@@ -177,7 +214,7 @@ for iev,event in enumerate(events):
       H_pfcand_eta_fake.Fill(j.eta())
     
 
-f = ROOT.TFile.Open("myfile.root","RECREATE")
+f = ROOT.TFile.Open("myfile_ref.root","RECREATE")
 H_ParticleEta_gen.Write()
 H_ParticleEta_matched.Write()
 #H_ParticleEta_fake.Write()
@@ -205,10 +242,15 @@ H_pfcand_eta_fake.Write()
 H_pfcand_pt.Write()
 H_pfcand_pt_matched.Write()
 H_pfcand_pt_fake.Write()
+H_deltaR.Write()
 
 for i in range(len(etabins)): 
+  H_ParticlePt_matched_eta[i].Write()
+  H_ParticlePt_eta[i].Write()
   for j in range(len(ptbins)):
     H_response_pt[i][j].Write()
+    H_response_charge_pt[i][j].Write()
+    H_response_neutral_pt[i][j].Write()
     #H_responseRaw_pt[i][j].Write()
 #ROOT.TFile.Close(f)
 f.Write()
