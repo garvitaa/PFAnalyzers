@@ -156,28 +156,30 @@ verticesScore = Handle("edm::ValueMap<float>")
 
 # test
 # pfTICL
-#listFiles=[
-#   'file:8c20b216-dd17-43e2-878e-d6ceb8c735f5.root'
-#]
-# ref
 listFiles=[
-    'file:3161edd0-2375-4aea-ac8e-bc6c416ac9c4.root'
+    'file:/eos/uscms/store/group/hcal_upgrade/HFupgrade/crab/SinglePiPt0p7To20Eta2p8_5p2/step3/210530_175519/0000/merged.root',
+    'file:/eos/uscms/store/group/hcal_upgrade/HFupgrade/crab/SinglePiPt0p7To20Eta0p0_2p8/step3/210530_202709/0000/merged.root'
 ]
+
+# ref
+# listFiles=[
+#     'file:/eos/uscms/store/group/hcal_upgrade/HFupgrade/crab/SinglePiPt0p7To20Eta0p0_2p8/step3/210530_202709/0000/merged.root'
+# ]
+
 events = Events(listFiles)
 
 for iev,event in enumerate(events):
-  #if iev >= 1: break
+  #if iev >= 1000: break
   event.getByLabel(pgenParLabel, pgenpars)
   event.getByLabel(jetLabel, jets)
   event.getByLabel(pjetLabel, pjets)
   event.getByLabel(pfcandLabel,pfcands)
-  print "\nEvent: run %6d, lumi %4d, event %12d" % (event.eventAuxiliary().run(), event.eventAuxiliary().luminosityBlock(),event.eventAuxiliary().event())
+  print "\n%5d Event: run %6d, lumi %4d, event %12d" % (iev, event.eventAuxiliary().run(), event.eventAuxiliary().luminosityBlock(),event.eventAuxiliary().event())
 
   # PackedGenParticles
   for i,pgenp in enumerate(pgenpars.product()): 
     #if pgenp.pt() < 5 : continue
-    print "pgenpar: run %6d, event %10d, pt %4.1f, eta %5.2f, phi %5.2f, pdgId %d." % (
-      event.eventAuxiliary().run(), event.eventAuxiliary().event(), pgenp.pt(), pgenp.eta(), pgenp.phi(), pgenp.pdgId())
+    #print "pgenpar: run %6d, event %10d, pt %4.1f, eta %5.2f, phi %5.2f, pdgId %d." % (event.eventAuxiliary().run(), event.eventAuxiliary().event(), pgenp.pt(), pgenp.eta(), pgenp.phi(), pgenp.pdgId())
     i_eta = int(np.digitize([abs(pgenp.eta())],etabins))-1
     i_pt = int(np.digitize([pgenp.pt()],ptbins))-1
     H_ParticlePt_gen.Fill(pgenp.pt())
@@ -186,6 +188,7 @@ for iev,event in enumerate(events):
 
     dr_min = 99999.0
     match = False # matching gen particles to pfcands
+    recop = None
     for k,j in enumerate(pfcands.product()):
       if j.pt() < 0:continue
       H_deltaR.Fill(math.sqrt(deltaR2(pgenp,j)))
@@ -197,17 +200,21 @@ for iev,event in enumerate(events):
             match=True
             recop = j
 
+    #if recop is None:
+    #  print "ERROR: This event has no PF candidate that matches Gen particle. Event # %5d" % (iev)
+    #  continue
+
     if match:
-      print "matched: run %6d, event %10d, pt %5.1f eta %5.2f phi %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(),event.eventAuxiliary().event(),recop.pt(), recop.eta(), recop.phi(), recop.pdgId(), recop.rawCaloFraction(), recop.rawHcalFraction())
+      #print "matched: run %6d, event %10d, pt %5.1f eta %5.2f phi %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(),event.eventAuxiliary().event(),recop.pt(), recop.eta(), recop.phi(), recop.pdgId(), recop.rawCaloFraction(), recop.rawHcalFraction())
       H_ParticlePt_matched.Fill(pgenp.pt())
       H_ParticleEta_matched.Fill(pgenp.eta())
-      print "    RecopT: %5.3f GenpT: %5.3f Response: %5.3f i_pt: %3i i_eta: %3i" % (recop.pt(), pgenp.pt(), (recop.pt() / pgenp.pt()), i_pt, i_eta)
+      #print "    RecopT: %5.3f GenpT: %5.3f Response: %5.3f i_pt: %3i i_eta: %3i" % (recop.pt(), pgenp.pt(), (recop.pt() / pgenp.pt()), i_pt, i_eta)
       if (i_eta <len(etabins)) & (i_pt < len(ptbins)):
         H_ParticlePt_matched_eta[i_eta].Fill(pgenp.pt())
         H_response_pt[i_eta][i_pt].Fill(recop.pt() / pgenp.pt())
-        H_response_track_pt[i_eta][i_pt].Fill(recop.ptTrk() / pgenp.pt())
         if (abs(recop.charge()) > 0):
           H_response_charge_pt[i_eta][i_pt].Fill(recop.pt() / pgenp.pt())
+          H_response_track_pt[i_eta][i_pt].Fill(recop.ptTrk() / pgenp.pt())
         else:
           H_response_neutral_pt[i_eta][i_pt].Fill(recop.pt() / pgenp.pt())
         for d in range(len(deltaRbins)):
@@ -217,8 +224,7 @@ for iev,event in enumerate(events):
             if j.pt() < 0: continue
             if (deltaR2(pgenp,j) < (deltaRbins[d])**2):
               pt_sum+=j.pt()
-              pt_track_sum+=j.ptTrk()
-          print pt_sum
+              if (abs(j.charge()) > 0): pt_track_sum+=j.ptTrk()
           H_response_pt_dR[d][i_eta][i_pt].Fill(pt_sum / pgenp.pt())
           H_response_track_pt_dR[d][i_eta][i_pt].Fill(pt_track_sum / pgenp.pt())
           if (abs(recop.charge()) > 0):
@@ -235,43 +241,28 @@ for iev,event in enumerate(events):
     calo_count = 0
     for k,j in enumerate(pfcands.product()):
       if j.pt() < 0:continue
-      if (deltaR2(recop,j) < 0.01):
-        if ((recop.pt() / pgenp.pt()) > 0.8):
-          trk_count+=1
-        else:
-          calo_count+=1
+      #print "pfcands: run %6d, event %10d, pt %5.1f eta %5.2f phi %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(), event.eventAuxiliary().event(), j.pt(), j.eta(), j.phi(), j.pdgId(), j.rawCaloFraction(), j.rawHcalFraction())
+      if match:
+        if (deltaR2(recop,j) < 0.01):
+          if ((recop.pt() / pgenp.pt()) > 0.8):
+            trk_count+=1
+          else:
+            calo_count+=1
     H_trk_nPFcands.Fill(trk_count)
     H_calo_nPFcands.Fill(calo_count)
 
   # Jets (standard AK4)
   for i,j in enumerate(jets.product()):
-    print "jet: run %6d, event %10d, pt %5.1f (raw pt %5.1f, matched-calojet pt %5.1f), eta %+4.2f, btag run1(CSV) ) %.3f, run2(pfCSVIVFV2) %.3f, pileup mva disc %+.2f" % (
-      event.eventAuxiliary().run(), event.eventAuxiliary().event(), j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.userFloat("caloJetMap:pt"), j.eta(), max(0,j.bDiscriminator("combinedSecondaryVertexBJetTags")), max(0,j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")), j.userFloat("pileupJetId:fullDiscriminant"))
+    #print "jet: run %6d, event %10d, pt %5.1f (raw pt %5.1f, matched-calojet pt %5.1f), eta %+4.2f, btag run1(CSV) ) %.3f, run2(pfCSVIVFV2) %.3f, pileup mva disc %+.2f" % (event.eventAuxiliary().run(), event.eventAuxiliary().event(), j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.userFloat("caloJetMap:pt"), j.eta(), max(0,j.bDiscriminator("combinedSecondaryVertexBJetTags")), max(0,j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")), j.userFloat("pileupJetId:fullDiscriminant"))
 
     H_recoJet_pt.Fill(j.pt())
     H_recoJetRaw_pt.Fill(j.pt()*j.jecFactor('Uncorrected'))
     H_recoJet_eta.Fill(j.eta())
 
-    # match = False
-    # for k,pgenp in enumerate(pgenpars.product()):
-    #   if abs(pgenp.pdgId())==211:
-    #     if deltaR2(pgenp,j)<0.01:
-    #       match=True
-
-    # if match:
-    #   H_recoJet_pt_matched.Fill(j.pt())
-    #   H_recoJetRaw_pt_matched.Fill(j.pt()*j.jecFactor('Uncorrected'))
-    #   H_recoJet_eta_matched.Fill(j.eta())
-    # else:
-    #   H_recoJet_pt_fake.Fill(j.pt())
-    #   H_recoJetRaw_pt_fake.Fill(j.pt()*j.jecFactor('Uncorrected'))
-    #   H_recoJet_eta_fake.Fill(j.eta())
-
   # pfcands
   for i,j in enumerate(pfcands.product()):
     if j.pt() < 0: continue
-    print "pfcands: run %6d, event %10d, pt %5.1f eta %5.2f phi %5.2f pdgId %5d %5.3f %5.3f " % ( event.eventAuxiliary().run(), event.eventAuxiliary().event(), j.pt(), j.eta(), j.phi(), j.pdgId(), j.rawCaloFraction(), j.rawHcalFraction())
-    
+
     H_pfcand_pt.Fill(j.pt())
     H_pfcand_eta.Fill(j.eta())
 
@@ -287,18 +278,27 @@ for iev,event in enumerate(events):
     else:
       H_pfcand_pt_fake.Fill(j.pt())
       H_pfcand_eta_fake.Fill(j.eta())
-    
 
-f = ROOT.TFile.Open("myfile_ref.root","RECREATE")
+f = ROOT.TFile.Open("SinglePiPt0p7To20Eta0p0_5p2.root","RECREATE")  
 H_ParticleEta_gen.Write()
 H_ParticleEta_matched.Write()
+#H_ParticleEta_fake.Write()
 
 H_ParticlePt_gen.Write()
 H_ParticlePt_matched.Write()
+#H_ParticlePt_fake.Write()
 
 H_recoJet_eta.Write()
+#H_recoJet_eta_matched.Write()
+#H_recoJet_eta_fake.Write()
+
 H_recoJet_pt.Write()
+#H_recoJet_pt_matched.Write()
+#H_recoJet_pt_fake.Write()
+
 H_recoJetRaw_pt.Write()
+#H_recoJetRaw_pt_matched.Write()
+#H_recoJetRaw_pt_fake.Write()
 
 H_pfcand_eta.Write()
 H_pfcand_eta_matched.Write()
